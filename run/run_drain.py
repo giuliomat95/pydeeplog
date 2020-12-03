@@ -1,36 +1,57 @@
 import json
-import logging
-import os
-import subprocess
-import sys
-import time
-
+import re
 from drain3 import TemplateMiner
 
-logger = logging.getLogger(__name__)
-input_dir = '../data/'
-in_log_file = "sample_hdfs.log"
-output_dir = 'drainResult/'
+
+def tokenizer(msg, extra_delimiters=[]):
+    msg = msg.strip()
+    for delimiter in extra_delimiters:
+        msg = msg.replace(delimiter, " ")
+    msg_tokens = msg.split()
+    return msg_tokens
+
+def get_msg_params(msg, template, extra_delimiters=[]):
+    print()
+    print(msg)
+    print(template)
+    msg = tokenizer(msg, extra_delimiters)
+    template = tokenizer(template)
+    print(msg)
+    print(template)
+    print(len(msg), len(template))
+    assert len(msg) == len(template)
+
+    params = []
+    for i in range(len(msg)):
+        if re.search(r"^\<.+?\>$", template[i]):
+            params.append(msg[i])
+
+    return params
+
 
 
 template_miner = TemplateMiner()
+log_file = [
+    'connector=52541013: Closing multi target connection',
+    'connector=52540976, kind=unpiped, path=52.86.47.45:58170<->10.11.24.33:443<=>10.11.24.33:41904<->172.17.12.211:660: Connector closed',
+    'connector=52541014, kind=unpiped, path=52.19.12.121:49440<->10.11.24.33:1515<=>10.11.24.33:54193<->172.17.12.65:1515: Connector closed',
+]
+extra_delimiters = template_miner.config.get('DRAIN', 'extra_delimiters', fallback='[]')
 
-line_count = 0
-start_time = time.time()
-batch_start_time = start_time
-batch_size = 10000
-with open(input_dir + in_log_file) as f:
-    for line in f:
-        line = line.rstrip()
-        line = line.partition(": ")[2]
-        result = template_miner.add_log_message(line)
-        line_count += 1
-        if result["change_type"] != "none":
-            result_json = json.dumps(result)
-sorted_clusters = sorted(template_miner.drain.clusters, key=lambda it: it.size, reverse=True)
-logging.basicConfig(filename=output_dir + in_log_file + '_templates.csv', filemode='w', level=logging.INFO, format='%(message)s')
-for cluster in sorted_clusters:
-    logger.info(cluster)
+for log_line in log_file:
+    drain_cluster = template_miner.add_log_message(log_line)
 
+    """cluster_id = drain_cluster['cluster_id']
+    template = drain_cluster['template_mined']
+    
+    result = {
+        'cluster_id': cluster_id,
+        'template': template,
+        'params': get_msg_params(log_line, template, extra_delimiters)
+    }"""
+    print(json.dumps(drain_cluster))
 
-
+print('-' * 10)
+print("Clusters:")
+for cluster in template_miner.drain.clusters:
+    print(cluster)

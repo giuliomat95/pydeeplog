@@ -4,7 +4,7 @@
 
 TODO
 
-## Development
+## Dev environment
 
 The first step is to create a virtual environment. You can do this with PyCharm or from the terminal as follows:
 
@@ -18,7 +18,6 @@ After this you should configure your IDE to use this environment. On Pycharm it 
 
 ## Docker containers
 
-
 ```sh
 docker build --tag docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest .
 ```
@@ -28,4 +27,10 @@ docker run --detach \
     --network host \
     --name deeplog-trainer \
     docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest
+```
+
+## Tests
+
+```sh
+python -m unittest discover -s ./tests -p '*_test.py'
 ```
