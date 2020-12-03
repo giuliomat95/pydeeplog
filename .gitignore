@@ -1,10 +1,11 @@
-# IDE
-.idea
-
-# Python
+# Python and project
+.env
 venv
 .ipynb_checkpoints
 __pycache__
+
+# IDE
+.idea
 
 # Mac OS
 .DS_Store
