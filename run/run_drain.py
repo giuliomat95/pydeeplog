@@ -28,19 +28,21 @@ def get_msg_params(msg, template, extra_delimiters=[]):
 
     return params
 
+input_dir = '../data/'
+in_log_file = "sample_batrasio.log"
+output_dir = 'drainResult/'
 
-
-template_miner = TemplateMiner()
-log_file = [
-    'connector=52541013: Closing multi target connection',
-    'connector=52540976, kind=unpiped, path=52.86.47.45:58170<->10.11.24.33:443<=>10.11.24.33:41904<->172.17.12.211:660: Connector closed',
-    'connector=52541014, kind=unpiped, path=52.19.12.121:49440<->10.11.24.33:1515<=>10.11.24.33:54193<->172.17.12.65:1515: Connector closed',
-]
-extra_delimiters = template_miner.config.get('DRAIN', 'extra_delimiters', fallback='[]')
-
-for log_line in log_file:
-    drain_cluster = template_miner.add_log_message(log_line)
-
+def Drain(input_dir, in_log_file, output_dir):
+    template_miner = TemplateMiner()
+    extra_delimiters = template_miner.config.get('DRAIN', 'extra_delimiters', fallback='[]')
+    with open(input_dir + in_log_file) as f:
+        for line in f:
+            line = line.rstrip()
+            line = line.partition("\t")[2]
+        template_miner.add_log_message(line)
+        #print(json.dumps(drain_cluster))
+    msg_templates = []
+    templates_id =[]
     """cluster_id = drain_cluster['cluster_id']
     template = drain_cluster['template_mined']
     
@@ -49,9 +51,10 @@ for log_line in log_file:
         'template': template,
         'params': get_msg_params(log_line, template, extra_delimiters)
     }"""
-    print(json.dumps(drain_cluster))
 
-print('-' * 10)
-print("Clusters:")
-for cluster in template_miner.drain.clusters:
-    print(cluster)
+    with open(output_dir+in_log_file+'_templates.csv', 'w') as f:
+        for cluster in template_miner.drain.clusters:
+            f.write('{}\n'.format(cluster.get_template()))
+            templates_id.append(cluster.cluster_id)
+            msg_templates.append(cluster.get_template())
+    return msg_templates, templates_id
