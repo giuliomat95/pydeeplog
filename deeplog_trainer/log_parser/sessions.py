@@ -1,18 +1,25 @@
-class SessionStorageInterface:
-    def add(self, msg):
-        """Adds a message"""
-        pass
-
-    def get_all(self):
-        """Returns all the stored sessions"""
-        pass
-
-class DimasSessionStorage(SessionStorageInterface):
+class SessionStorage:
     def __init__(self):
-        self.sessions = []
+        self.sessions = {}
+        self.templates = {}
+        self.normal_sessions = {}
+        self.abnormal_sessions = {}
 
-    def add(self, msg: str):
-        self.sessions.append(msg)
-
-    def get_all(self) -> list:
+    def get_sessions(self, sess_id, template_id):
+        if sess_id not in self.sessions.keys():
+            self.sessions[sess_id] = [template_id]
+        else:
+            self.sessions[sess_id].append(template_id)
         return self.sessions
+
+    def get_templates(self, template_id, template):
+        self.templates[template_id] = template
+        return self.templates
+
+    def split_sessions(self, anomaly_flag):
+        for i in range(1, len(self.sessions)+1):
+            if anomaly_flag[i] is False:
+                self.normal_sessions[i] = self.sessions[i]
+            else:
+                self.abnormal_sessions[i] = self.sessions[i]
+        return self.normal_sessions, self.abnormal_sessions
