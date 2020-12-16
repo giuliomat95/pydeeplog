@@ -5,6 +5,10 @@ class Drain:
         self.template_miner = template_miner
 
     def get_parameters(self, content, template):
+        """
+        Given the entire message and its template, it return a list of words masked in the template
+        (what we call 'the variable part' of the message)
+        """
         template_regex = re.sub(r"<.{1,5}>", "<*>", template)
         if "<*>" not in template_regex: return []
         template_regex = re.sub(r'([^A-Za-z0-9])', r'\\\1', template_regex)
@@ -15,12 +19,15 @@ class Drain:
         parameter_list = list(parameter_list) if isinstance(parameter_list, tuple) else [parameter_list]
         return parameter_list
 
-    @staticmethod
-    def clusterId_to_num(cluster_id):
-        num = int(cluster_id[1:])-1
+    def clusterId_to_num(self, cluster_id):
+        num = int(cluster_id[1:])
         return num
 
     def add_message(self, msg):
+        """
+        For each log message in input it return a dictionary with the correspondent template, template Id and list
+        of parameters
+        """
         msg = msg.rstrip()
         cluster = self.template_miner.add_log_message(msg)
         template = cluster['template_mined']

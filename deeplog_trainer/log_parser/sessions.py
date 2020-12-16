@@ -2,6 +2,7 @@ class SessionStorage:
     def __init__(self):
         self.sessions = {}
         self.templates = {}
+        self.parameters = {}
         self.normal_sessions = {}
         self.abnormal_sessions = {}
 
@@ -15,6 +16,13 @@ class SessionStorage:
     def get_templates(self, template_id, template):
         self.templates[template_id] = template
         return self.templates
+
+    def get_parameters(self, sess_id, parameter):
+        if sess_id not in self.parameters.keys():
+            self.parameters[sess_id] = [parameter]
+        else:
+            self.parameters[sess_id].append(parameter)
+        return self.parameters
 
     def split_sessions(self, anomaly_flag):
         for i in range(1, len(self.sessions)+1):

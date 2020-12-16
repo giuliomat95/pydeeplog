@@ -7,6 +7,9 @@ class BatrasioAdapter:
         self.anomaly_flag = {}
 
     def get_sessionId(self, log_msg: str):
+        """
+        Given the log message, return the corresponding session Id it belongs to.
+        """
         log_msg = log_msg.rstrip()
         procid = re.search(r"^(\d+)", log_msg)[0]
         if procid not in self.d.keys():
