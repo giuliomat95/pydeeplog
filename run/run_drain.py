@@ -8,7 +8,7 @@ from deeplog_trainer.log_parser.drain import Drain
 import re
 
 input_dir = '../data/'
-in_log_file = "sample.log"
+in_log_file = "sample_test.log"
 
 with open(input_dir + in_log_file) as f:
     adapter = BatrasioAdapter()
@@ -18,11 +18,11 @@ with open(input_dir + in_log_file) as f:
     print(f"Drain3 started with reading from {in_log_file}")
     count = 0
     for line in f:
-        sess_id, anomaly_flag = adapter.get_sessionId(log_msg=line)
-        print(sess_id)
+        sess_id, anomaly_flag = adapter.get_session_id(log_msg=line)
         procid = re.search(r"^(\d+)", line)[0]
         content = line.split(procid)[1].strip()
         drain_result = drain.add_message(content)
+        print(drain_result['params'])
         sessions = session_storage.get_sessions(sess_id, drain_result['template_id'])
         templates = session_storage.get_templates(drain_result['template_id'], drain_result['template'])
         parameters = session_storage.get_parameters(sess_id, drain_result['params'])
@@ -38,7 +38,8 @@ for sess_id in sessions:
     result['data'].append(dict(template_seq=sessions[sess_id], template_params=parameters[sess_id],
                                is_normal=anomaly_flag[sess_id], session_id=sess_id))
 
-json_dataset = json.dumps(result)
-json_templates = json.dumps(templates)
-
+with open('data.json', 'w') as f:
+    json.dump(result, f)
+with open('templates.json', 'w') as g:
+    json.dump(templates, g)
 

@@ -6,7 +6,7 @@ class BatrasioAdapter:
         self.last_session_id = 0
         self.anomaly_flag = {}
 
-    def get_sessionId(self, log_msg: str):
+    def get_session_id(self, log_msg: str):
         """
         Given the log message, return the corresponding session Id it belongs to.
         """

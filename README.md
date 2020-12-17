@@ -30,7 +30,15 @@ docker run --detach \
 ```
 
 ## Tests
-
+Run tests with Pytest:
 ```sh
-python -m unittest discover -s ./tests -p '*_test.py'
+pytest 'test_*.py'
+```
+Coverage:
+```
+coverage erase && \
+coverage run --omit='venv/*,test/*' -m pytest 'test_*.py' && \
+coverage report --omit='venv/*,test/*' -m && \
+coverage html --omit='venv/*' -d './reports/coverage'
+
 ```
