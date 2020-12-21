@@ -1,17 +1,20 @@
-import sys
-sys.path.append('../../')
 from drain3 import TemplateMiner
 from deeplog_trainer.log_parser.drain import Drain
 import pytest
 import re
 
-template_miner = TemplateMiner()
-drain = Drain(template_miner)
-with open('../../data/sample_test.log') as f:
-    list_of_logs = [line.strip() for line in f]
+@pytest.fixture(scope='session')
+def drain():
+    template_miner = TemplateMiner()
+    return Drain(template_miner)
 
-@pytest.mark.parametrize("logs", list_of_logs)
-def test_get_parameters(logs):
+def get_data():
+    with open('../../data/sample_test.log') as f:
+        for line in f:
+            yield line.strip()
+
+@pytest.mark.parametrize("logs", get_data())
+def test_get_parameters(logs, drain):
     result = drain.add_message(logs)
     template = result['template']
     params = result['params']
