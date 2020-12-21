@@ -1,7 +1,5 @@
 from drain3 import TemplateMiner
 import json
-import sys
-sys.path.append('../')
 from deeplog_trainer.log_parser.adapter import BatrasioAdapter
 from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
