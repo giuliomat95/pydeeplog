@@ -13,7 +13,7 @@ def setup():
     return adapter, drain, session_storage
 
 def get_data():
-    with open('../../data/sample_test.log') as f:
+    with open('data/sample_test.log') as f:
         for line in f:
             yield line.strip()
 

@@ -9,7 +9,7 @@ def drain():
     return Drain(template_miner)
 
 def get_data():
-    with open('../../data/sample_test.log') as f:
+    with open('data/sample_test.log') as f:
         for line in f:
             yield line.strip()
 

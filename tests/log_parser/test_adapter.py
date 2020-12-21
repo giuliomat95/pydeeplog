@@ -7,7 +7,7 @@ def adapter():
 
 def get_data():
     expected_sess_id = [1, 1, 1, 2, 2, 2, 2, 3, 2, 3, 3, 3, 3]
-    with open('../../data/sample_test.log') as f:
+    with open('data/sample_test.log') as f:
         for i, line in enumerate(f):
             yield (line.strip(), expected_sess_id[i])
 
