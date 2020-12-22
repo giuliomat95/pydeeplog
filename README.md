@@ -29,7 +29,7 @@ docker run --detach \
     docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest
 ```
 ##Drain parameters
-Drain is configured using [configparser](https://docs.python.org/3.4/library/configparser.html). Config filename is drain3.ini in working directory.
+Drain is configured using [configparser](https://docs.python.org/3.4/library/configparser.html). Config filename is `drain3.ini` in working directory.
 ##Run Drain
 Run the following code from terminal. The arguments --input and --output are respectively the name of the file to be parsed and the name of the folder where the results will be saved 
 ```
