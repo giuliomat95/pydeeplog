@@ -31,7 +31,7 @@ class Drain:
         For each log message in input it return a dictionary with the correspondent template, template Id and list
         of parameters
         """
-        msg = msg.rstrip()
+        msg = msg.strip()
         cluster = self.template_miner.add_log_message(msg)
         template = cluster['template_mined']
         template_id = cluster['cluster_id']
