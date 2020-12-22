@@ -43,8 +43,8 @@ pytest 'test_*.py'
 Coverage:
 ```
 coverage erase && \
-coverage run --omit='venv/*,test/*' -m pytest 'test_*.py' && \
-coverage report --omit='venv/*,test/*' -m && \
-coverage html --omit='venv/*' -d './reports/coverage'
+coverage run --include='./deeplog_trainer/*' -m pytest && \
+coverage report --include='./deeplog_trainer/*' -m && \
+coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 
 ```
