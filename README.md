@@ -38,7 +38,7 @@ python3 -m path.to.script.run.run_drain --input 'name_file' --output 'name_direc
 ## Tests
 Run tests with Pytest: from the root folder of the project run the following code:
 ```sh
-pytest 'test_*.py'
+pytest 
 ```
 Coverage:
 ```
