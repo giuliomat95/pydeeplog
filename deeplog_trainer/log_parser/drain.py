@@ -28,7 +28,7 @@ class Drain:
 
     def add_message(self, msg):
         """
-        For each log message in input it return a dictionary with the correspondent template, template Id and list
+        For each log message in input it returns a dictionary with the correspondent template, template Id and list
         of parameters
         """
         msg = msg.strip()
