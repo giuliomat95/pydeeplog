@@ -23,6 +23,10 @@ class Drain:
         return parameter_list
 
     def cluster_id_to_num(self, cluster_id):
+        """
+        Extract the integer from the label composed by a letter in the first position followed by a 4 digits
+        number. NB: the template codifications start from 1.
+        """
         num = int(cluster_id[1:])
         return num
 
