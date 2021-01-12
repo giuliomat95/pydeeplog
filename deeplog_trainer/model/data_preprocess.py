@@ -107,7 +107,7 @@ class DataPreprocess:
         - train_ratio (float): defines the subset for training.
         - val_ratio (float): defines the subset for validation (must be greater than train_ratio).
 
-        Returns: three subsets of the input dataset.
+        Return: three subsets of the input dataset.
         """
         train_idx, val_idx, test_idx = np.split(np.arange(dataset_size),
                                                 [int(train_ratio * dataset_size), int(val_ratio * dataset_size)])

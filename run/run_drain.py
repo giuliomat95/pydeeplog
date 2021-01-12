@@ -16,7 +16,7 @@ input_dir = '/data/'
 
 
 def run_drain(logger, input_file, output_file):
-    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + input_dir + input_file) as f:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + input_dir + input_file, 'r') as f:
         adapter = BatrasioAdapter()
         template_miner = TemplateMiner()
         drain = Drain(template_miner)
