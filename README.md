@@ -48,3 +48,8 @@ coverage report --include='./deeplog_trainer/*' -m && \
 coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 
 ```
+## Tensorboard
+To visualize the evolution of the loss/accuracy trend of the train/validation process, run the following code from the root folder:
+```
+tensorboard --logdir artifacts
+```

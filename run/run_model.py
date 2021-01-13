@@ -4,6 +4,7 @@ import numpy as np
 from deeplog_trainer.model.data_preprocess import DataPreprocess
 from deeplog_trainer.model.model_menager import ModelManager
 from deeplog_trainer.model.training import ValLossLogger, ModelTrainer
+from deeplog_trainer.model.model_evaluator import ModelEvaluator
 import argparse
 import json
 import logging as logger
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     INPUT_FILE = 'data.json'
     dataset = []
+    # load the data parsed from Drain:
     with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/' + args.input_dir + '/' + INPUT_FILE,
               'r') as fp:
         data = json.load(fp)
@@ -47,6 +49,7 @@ if __name__ == '__main__':
     if not os.path.exists(filepath):
         os.mkdir(filepath)
     filename = 'LSTM'
+    # Save the model
     model_manager.save(model, filepath, filename)
     X_train, y_train = data_preprocess.transform(
         data_preprocess.chunks(train_dataset),
@@ -58,4 +61,18 @@ if __name__ == '__main__':
     )
 
     model_trainer = ModelTrainer(logger, epochs=100)
+    # Run training and validation to fit the model
     model_trainer.train(model, [X_train, y_train], [X_val, y_val])
+
+    # Calculate confidence interval for different K values in the validation set
+    for k in range(1, 5):
+        model_evaluator = ModelEvaluator(model, X_val, y_val, top_k=k)
+        scores = model_evaluator.compute_scores()
+        print('-' * 10, 'K = %d' % k, '-' * 10)
+        print('- Num. items: %d' % scores['n_items'])
+        print('- Num. normal: %d' % scores['n_correct'])
+        print('- Accuracy: %.4f' % scores['accuracy'])
+        print('- Confidence intervals:')
+        for x in scores['confidence_intervals']:
+            print('(%.3f, %.3f)' % (x[0], x[1]))
+
