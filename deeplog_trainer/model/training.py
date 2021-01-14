@@ -78,22 +78,20 @@ class ModelTrainer:
             verbose=0)
 
         with tempfile.TemporaryDirectory() as tmpdirname:
-            filepath = tmpdirname + '/checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5'
+            filepath = os.path.join(tmpdirname, 'checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5')
             # Periodically save the model
             model_ckpt = tf.keras.callbacks.ModelCheckpoint(filepath=filepath, monitor='val_accuracy', verbose=0,
                                                             save_best_only=True, save_weights_only=True)
 
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir='logdir', histogram_freq=0,
-                                                              embeddings_freq=0)
-
-        history = model.fit(
-            train_dataset[0],
-            train_dataset[1],
-            validation_data=(val_dataset[0], val_dataset[1]),
-            epochs=self.epochs,
-            batch_size=self.batch_size,
-            callbacks=[train_logger, model_ckpt, early_stop, tensorboard_callback],
-            shuffle=False,
-            verbose=1
-        )
+            tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir='logdir', histogram_freq=0, embeddings_freq=0)
+            history = model.fit(
+                train_dataset[0],
+                train_dataset[1],
+                validation_data=(val_dataset[0], val_dataset[1]),
+                epochs=self.epochs,
+                batch_size=self.batch_size,
+                callbacks=[train_logger, model_ckpt, early_stop, tensorboard_callback],
+                shuffle=False,
+                verbose=1
+            )
         return history
