@@ -6,7 +6,7 @@ tf.random.set_seed(42)
 
 
 class DataPreprocess:
-    def __init__(self, start_token: int, vocab, window_size=10):
+    def __init__(self, vocab: list, window_size=10):
         """
         Description:
         + Encodes log keys with additional values for padding, unknown keys and ending key
@@ -14,8 +14,7 @@ class DataPreprocess:
         + Splits into chunks of size `WINDOW_SIZE`. Note that, the longer the window size is, the more accurate the
           model is. However, workflows are less accurate.
         Attributes:
-        :param start_token (int): Lowest value in log sequences
-        :param vocab (int): Length of 'vocab' list, aka number of different log keys.
+        :param vocab (list): List of unique keys in the dataset
         :param window_size (int): Length of the chunks that are going to be the inputs of the model
         """
         self.special_tokens = ['[PAD]', '[UNK]', '[END]']
@@ -23,7 +22,6 @@ class DataPreprocess:
         # UNK replace unknown tokens, END labels the end of the sequences fed into the encoder.
         self.vocab = vocab
         self.num_tokens = len(self.vocab) + len(self.special_tokens)
-        self.start_token = start_token
         self.window_size = window_size
         # Build dictionaries of tokens
         self.dict_idx2token = self.special_tokens + vocab
@@ -96,7 +94,7 @@ class DataPreprocess:
         return X_data, y_data
 
     @staticmethod
-    def split_idx(dataset_size, train_ratio=.7, val_ratio=0.85):
+    def split_idx(dataset_size, train_ratio, val_ratio):
         """
         Splits indices of the data into the usual three subsets: training, validation and testing.
 

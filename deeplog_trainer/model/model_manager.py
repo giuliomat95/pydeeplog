@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Input, LSTM, Dense
 
 
 class ModelManager:
-    def __init__(self, input_size, num_tokens, lstm_units=64):
+    def __init__(self, input_size, num_tokens, lstm_units):
         """
         Attributes:
         :param input_size: Length of network input object
@@ -43,7 +43,7 @@ class ModelManager:
         return model
 
     def save(self, model, filepath, filename):
-        model.save(filepath + filename, save_format='h5')
+        model.save(filepath + '/' + filename, save_format='h5')
 
     def load(self, filepath):
         model = load_model(filepath)

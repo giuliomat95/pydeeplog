@@ -12,55 +12,64 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logger.basicConfig(level=logger.DEBUG)
 
 if __name__ == '__main__':
-    WINDOW_SIZE = 10
-    MIN_LENGTH = 4
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, help="Put the path to the file to be parsed")
+    parser.set_defaults()
+    parser.add_argument("--filepath", type=str, help="Put the input json dataset filepath from root folder")
+    parser.add_argument("--window_size", type=int, help="Put the window_size parameter", default=10)
+    parser.add_argument("--min_length", type=int, help="Put the minimum length of a sequence to be parsed", default=4)
+    parser.add_argument("--output", type=str, help="Put the the filepath of the output model file")
+    parser.add_argument("--filename", type=str, help="Put the name of the h5 file containing the model")
+    parser.add_argument("--LSTM_units", type=int, help="Put the number of units in each LSTM layer", default=64)
+    parser.add_argument("--n_epochs", type=int, help="Put the number of epochs", default=50)
+    parser.add_argument("--train_ratio", type=float, help="Put the percentage of dataset size to define the train set",
+                        default=0.7)
+    parser.add_argument("--val_ratio", type=float, help="Put the percentage of dataset size to define the validation set",
+                        default=0.85)
+    parser.add_argument("--early_stop", type=int, help="Put the number of epochs with no improvement after which training will be"
+                                                       "stopped", default=7)
+    parser.add_argument("--batch_size", type=int, help="Put the number of samples that will be propagated through the network",
+                        default=512)
     args = parser.parse_args()
-    INPUT_FILE = 'data.json'
     dataset = []
     # load the data parsed from Drain:
-    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/' + args.input_dir + '/' + INPUT_FILE,
-              'r') as fp:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/' + args.filepath, 'r') as fp:
         data = json.load(fp)
         for d in data['data']:
             seq = d['template_seq'][1:]  # the first element is skipped since in batrasio data all the sequences start
             # with the same encoding number
-            if len(seq) < MIN_LENGTH:
+            if len(seq) < args.min_length:
                 # Skip short sequences
                 continue
             dataset.append(seq)
 
     dataset = np.array(dataset, dtype=object)
     vocab = list(set([x for seq in dataset for x in seq]))  # list of unique keys in the training file
-    data_preprocess = DataPreprocess(start_token=1, vocab=vocab, window_size=WINDOW_SIZE)
+    data_preprocess = DataPreprocess(vocab=vocab, window_size=args.window_size)
     dataset = data_preprocess.encode_dataset(dataset)
-    train_idx, val_idx, test_idx = data_preprocess.split_idx(len(dataset))
+    train_idx, val_idx, test_idx = data_preprocess.split_idx(len(dataset), train_ratio=args.train_ratio, val_ratio=args.val_ratio)
     train_dataset = dataset[train_idx]
     val_dataset = dataset[val_idx]
     test_dataset = dataset[test_idx]
     num_tokens = data_preprocess.get_num_tokens()
     logger.info('Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx), len(test_idx)))
-    model_manager = ModelManager(WINDOW_SIZE, num_tokens)
+    model_manager = ModelManager(input_size=args.window_size, num_tokens=num_tokens, lstm_units=args.LSTM_units)
     model = model_manager.build()
     model.summary()
     X_train, y_train = data_preprocess.transform(
         data_preprocess.chunks(train_dataset),
-        add_padding=WINDOW_SIZE
+        add_padding=args.window_size
     )
     X_val, y_val = data_preprocess.transform(
         data_preprocess.chunks(val_dataset),
-        add_padding=WINDOW_SIZE
+        add_padding=args.window_size
     )
-    model_trainer = ModelTrainer(logger, epochs=100)
+    model_trainer = ModelTrainer(logger, epochs=args.n_epochs, early_stop=args.early_stop, batch_size=args.batch_size)
     # Run training and validation to fit the model
     model_trainer.train(model, [X_train, y_train], [X_val, y_val])
     # Save the model
-    filepath = 'run/model_result/'
-    if not os.path.exists(filepath):
-        os.mkdir(filepath)
-    filename = 'LSTM'
-    model_manager.save(model, filepath, filename)
+    if not os.path.exists(args.output):
+        os.mkdir(args.output)
+    model_manager.save(model, args.output, args.filename)
     # Calculate scores for different K values in the validation set
     for k in range(1, 5):
         model_evaluator = ModelEvaluator(model, X_val, y_val, top_k=k)

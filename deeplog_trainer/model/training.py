@@ -47,7 +47,7 @@ class ValLossLogger(tf.keras.callbacks.Callback):
 
 class ModelTrainer:
 
-    def __init__(self, logger, epochs=50, batch_size=512, early_stop=7):
+    def __init__(self, logger, epochs, batch_size, early_stop):
         """
         Description: Once the numerical representation of each session is ready, DeepLog treats these sequences as a
         Multi-class Time Series Classification, which is a supervised learning problem aiming to predict class labels
@@ -66,7 +66,9 @@ class ModelTrainer:
         """
         Given the model, the train and validation set as arguments, the method train process is trigger.
         The model checkpoints allows to save the model according to the 'monitor' index.
-        :rtype: object
+        :argument model: tensorflow model in h5 format
+        :argument train_dataset: train set type array
+        :argument val_dataset: validation set type array
         """
         train_logger = ValLossLogger(self.logger)
         early_stop = tf.keras.callbacks.EarlyStopping(
