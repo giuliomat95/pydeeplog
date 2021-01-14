@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 from deeplog_trainer.model.data_preprocess import DataPreprocess
-from deeplog_trainer.model.model_menager import ModelManager
+from deeplog_trainer.model.model_manager import ModelManager
 from deeplog_trainer.model.training import ValLossLogger, ModelTrainer
 from deeplog_trainer.model.model_evaluator import ModelEvaluator
 import argparse
@@ -33,15 +33,14 @@ if __name__ == '__main__':
 
     dataset = np.array(dataset, dtype=object)
     vocab = list(set([x for seq in dataset for x in seq]))  # list of unique keys in the training file
-    vocab_size = len(vocab)
-    data_preprocess = DataPreprocess(start_token=1, vocab_size=vocab_size, vocab=vocab, window_size=WINDOW_SIZE)
+    data_preprocess = DataPreprocess(start_token=1, vocab=vocab, window_size=WINDOW_SIZE)
     dataset = data_preprocess.encode_dataset(dataset)
     train_idx, val_idx, test_idx = data_preprocess.split_idx(len(dataset))
     train_dataset = dataset[train_idx]
     val_dataset = dataset[val_idx]
     test_dataset = dataset[test_idx]
     num_tokens = data_preprocess.get_num_tokens()
-    print('Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx), len(test_idx)))
+    logger.info('Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx), len(test_idx)))
     model_manager = ModelManager(WINDOW_SIZE, num_tokens)
     model = model_manager.build()
     model.summary()

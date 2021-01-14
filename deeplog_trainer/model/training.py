@@ -76,8 +76,6 @@ class ModelTrainer:
             verbose=0)
 
         with tempfile.TemporaryDirectory() as tmpdirname:
-            if not os.path.exists('run/tmpdirname'):
-                os.mkdir(tmpdirname)
             filepath = tmpdirname + '/checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5'
             # Periodically save the model
             model_ckpt = tf.keras.callbacks.ModelCheckpoint(filepath=filepath, monitor='val_accuracy', verbose=0,

@@ -6,7 +6,7 @@ tf.random.set_seed(42)
 
 
 class DataPreprocess:
-    def __init__(self, start_token: int, vocab_size, vocab, window_size=10):
+    def __init__(self, start_token: int, vocab, window_size=10):
         """
         Description:
         + Encodes log keys with additional values for padding, unknown keys and ending key
@@ -15,14 +15,14 @@ class DataPreprocess:
           model is. However, workflows are less accurate.
         Attributes:
         :param start_token (int): Lowest value in log sequences
-        :param vocab_size (list): List of unique keys in the dataset
         :param vocab (int): Length of 'vocab' list, aka number of different log keys.
         :param window_size (int): Length of the chunks that are going to be the inputs of the model
         """
         self.special_tokens = ['[PAD]', '[UNK]', '[END]']
         # PAD is the token to pad the sequences such that they all have the same length,
         # UNK replace unknown tokens, END labels the end of the sequences fed into the encoder.
-        self.num_tokens = vocab_size + len(self.special_tokens)
+        self.vocab = vocab
+        self.num_tokens = len(self.vocab) + len(self.special_tokens)
         self.start_token = start_token
         self.window_size = window_size
         # Build dictionaries of tokens
