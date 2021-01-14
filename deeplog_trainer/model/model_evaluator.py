@@ -1,4 +1,3 @@
-import math
 import numpy as np
 
 
@@ -22,15 +21,13 @@ class ModelEvaluator:
         self.n_items = len(self.X_data)
 
     def get_anomalies_idx(self):
-        """
-        Return the indexes of testing keys labeled as anomalous during detection stage
-        """
+        """Returns the indexes of testing keys labeled as anomalous during detection stage"""
         y_pred = self.predict()
         anomalies_idx = [i for i in range(self.n_items) if np.argmax(self.y_data[i]) not in y_pred[i]]
         return anomalies_idx
 
     def predict(self):
-        """Return the top_k indexes with the highest probability value"""
+        """Returns  the top_k indexes with the highest probability value"""
         y_pred = self.model.predict(self.X_data)  # Return a probability value for each index between 1 and the number
         # of tokens of being the next key of the previous sequence
         # assert len(y_pred[1])==num_tokens
@@ -39,23 +36,14 @@ class ModelEvaluator:
 
     def compute_scores(self):
         """
-        Return a dictionary with the number of items parsed, the number of keys labeled as normal, the accuracy
-        value and the confidence interval for the error
+        Returns a dictionary with the number of items parsed, the number of keys labeled as normal and the accuracy
+        value.
         """
-        n_correct = self.n_items - len(self.get_anomalies_idx())
-        accuracy = self.n_items and n_correct / self.n_items  # returns 0 if n_items = 0
-
-        # Confidence intervals
-        error = 1 - accuracy
-        confidence = []
-        for z in [1.64, 1.96, 2.58]:  # Values for 0.9, 0.95 and 0.99
-            x_1 = error - z * math.sqrt((error * (1 - error)) / self.n_items)
-            x_2 = error + z * math.sqrt((error * (1 - error)) / self.n_items)
-            confidence.append((x_1, x_2))
+        n_normal = self.n_items - len(self.get_anomalies_idx())
+        accuracy = self.n_items and n_normal / self.n_items  # returns 0 if n_items = 0
 
         return {
             'n_items': self.n_items,
-            'n_correct': n_correct,
+            'n_normal': n_normal,
             'accuracy': accuracy,
-            'confidence_intervals': confidence,
         }

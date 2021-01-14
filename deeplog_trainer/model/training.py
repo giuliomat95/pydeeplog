@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-
+import tempfile
 
 class ValLossLogger(tf.keras.callbacks.Callback):
     def __init__(self, logger, loss_index='loss', metric_index='accuracy'):
@@ -47,7 +47,7 @@ class ValLossLogger(tf.keras.callbacks.Callback):
 
 class ModelTrainer:
 
-    def __init__(self, logger, epochs=50, batch_size=512, early_stop=7, checkpoints_path='artifacts'):
+    def __init__(self, logger, epochs=50, batch_size=512, early_stop=7):
         """
         Description: Once the numerical representation of each session is ready, DeepLog treats these sequences as a
         Multi-class Time Series Classification, which is a supervised learning problem aiming to predict class labels
@@ -56,13 +56,11 @@ class ModelTrainer:
         :param epochs: Number of times the entire dataset is passed forward and backward by the neural network
         :param batch_size: Number of samples that will be propagated through the network.
         :param early_stop: Number of epochs with no improvement after which training will be stopped.
-        :param checkpoints_path: filepath where to store the checkpoints
         """
         self.logger = logger
         self.epochs = epochs
         self.batch_size = batch_size
         self.early_stop = early_stop
-        self.checkpoints_path = checkpoints_path
 
     def train(self, model, train_dataset, val_dataset):
         """
@@ -76,13 +74,16 @@ class ModelTrainer:
             monitor='val_loss',
             patience=self.early_stop,
             verbose=0)
-        if not os.path.exists(self.checkpoints_path):
-            os.mkdir(self.checkpoints_path)
-        filepath = self.checkpoints_path + '/checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5'
-        # Periodically save the model.
-        model_ckpt = tf.keras.callbacks.ModelCheckpoint(filepath=filepath, monitor='val_accuracy', verbose=0,
-                                                        save_best_only=True, save_weights_only=True)
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.checkpoints_path, histogram_freq=0,
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            if not os.path.exists('run/tmpdirname'):
+                os.mkdir(tmpdirname)
+            filepath = tmpdirname + '/checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5'
+            # Periodically save the model
+            model_ckpt = tf.keras.callbacks.ModelCheckpoint(filepath=filepath, monitor='val_accuracy', verbose=0,
+                                                            save_best_only=True, save_weights_only=True)
+
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir='logdir', histogram_freq=0,
                                                               embeddings_freq=0)
 
         history = model.fit(
@@ -95,3 +96,4 @@ class ModelTrainer:
             shuffle=False,
             verbose=1
         )
+        return history

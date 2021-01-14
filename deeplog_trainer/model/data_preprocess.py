@@ -9,9 +9,9 @@ class DataPreprocess:
     def __init__(self, start_token: int, vocab_size, vocab, window_size=10):
         """
         Description:
-        + Encode log keys with additional values for padding, unknown keys and ending key
-        + Randomly split the dataset as usually: train (70%), validation (15$) and test (15$)
-        + Split into chunks of size `WINDOW_SIZE`. Note that, the longer the window size is, the more accurate the
+        + Encodes log keys with additional values for padding, unknown keys and ending key
+        + Randomly splits the dataset as usually: train (70%), validation (15$) and test (15$)
+        + Splits into chunks of size `WINDOW_SIZE`. Note that, the longer the window size is, the more accurate the
           model is. However, workflows are less accurate.
         Attributes:
         :param start_token (int): Lowest value in log sequences
@@ -25,8 +25,6 @@ class DataPreprocess:
         self.num_tokens = vocab_size + len(self.special_tokens)
         self.start_token = start_token
         self.window_size = window_size
-        self.offset = (len(self.special_tokens) - self.start_token) if len(
-            self.special_tokens) > self.start_token else 0
         # Build dictionaries of tokens
         self.dict_idx2token = self.special_tokens + vocab
         self.dict_token2idx = {value: key for key, value in enumerate(self.dict_idx2token)}
@@ -36,13 +34,13 @@ class DataPreprocess:
 
     def get_num_tokens(self):
         """
-        Return number of log keys + the number of spacial tokens
+        Returns number of log keys + the number of spacial tokens
         """
         return self.num_tokens
 
     def encode_dataset(self, dataset):
         """
-        Encode values of the dataset. The unknown tokens are replaced by the the corresponding index of the token 'UNK'.
+        Encodes values of the dataset. The unknown tokens are replaced by the the corresponding index of the token 'UNK'.
         """
         for i, seq in enumerate(dataset):
             dataset[i] = [self.dict_token2idx[x] if x in self.dict_token2idx else self.dict_token2idx['[UNK]'] for x in
@@ -77,7 +75,7 @@ class DataPreprocess:
 
     def transform(self, dataset, add_padding=0):
         """
-        Prepare the data to be consumed by the ML model. If used, it should come after chunks method.
+        Prepares the data to be consumed by the ML model. If used, it should come after chunks method.
         """
         # Split into input and target values
         X_data = []
@@ -107,7 +105,7 @@ class DataPreprocess:
         - train_ratio (float): defines the subset for training.
         - val_ratio (float): defines the subset for validation (must be greater than train_ratio).
 
-        Return: three subsets of the input dataset.
+        Returns: three subsets of the input dataset.
         """
         train_idx, val_idx, test_idx = np.split(np.arange(dataset_size),
                                                 [int(train_ratio * dataset_size), int(val_ratio * dataset_size)])

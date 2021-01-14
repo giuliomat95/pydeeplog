@@ -45,12 +45,6 @@ if __name__ == '__main__':
     model_manager = ModelManager(WINDOW_SIZE, num_tokens)
     model = model_manager.build()
     model.summary()
-    filepath = 'run/model_result/'
-    if not os.path.exists(filepath):
-        os.mkdir(filepath)
-    filename = 'LSTM'
-    # Save the model
-    model_manager.save(model, filepath, filename)
     X_train, y_train = data_preprocess.transform(
         data_preprocess.chunks(train_dataset),
         add_padding=WINDOW_SIZE
@@ -59,20 +53,22 @@ if __name__ == '__main__':
         data_preprocess.chunks(val_dataset),
         add_padding=WINDOW_SIZE
     )
-
     model_trainer = ModelTrainer(logger, epochs=100)
     # Run training and validation to fit the model
     model_trainer.train(model, [X_train, y_train], [X_val, y_val])
-
-    # Calculate confidence interval for different K values in the validation set
+    # Save the model
+    filepath = 'run/model_result/'
+    if not os.path.exists(filepath):
+        os.mkdir(filepath)
+    filename = 'LSTM'
+    model_manager.save(model, filepath, filename)
+    # Calculate scores for different K values in the validation set
     for k in range(1, 5):
         model_evaluator = ModelEvaluator(model, X_val, y_val, top_k=k)
         scores = model_evaluator.compute_scores()
         print('-' * 10, 'K = %d' % k, '-' * 10)
         print('- Num. items: %d' % scores['n_items'])
-        print('- Num. normal: %d' % scores['n_correct'])
+        print('- Num. normal: %d' % scores['n_normal'])
         print('- Accuracy: %.4f' % scores['accuracy'])
-        print('- Confidence intervals:')
-        for x in scores['confidence_intervals']:
-            print('(%.3f, %.3f)' % (x[0], x[1]))
+
 
