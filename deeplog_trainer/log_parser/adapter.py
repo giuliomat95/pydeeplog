@@ -1,7 +1,8 @@
 import re
 
 class BatrasioAdapter:
-    def __init__(self, delimiter='TCP source connection created', anomaly1='TCP source SSL error',
+    def __init__(self, delimiter='TCP source connection created',
+                 anomaly1='TCP source SSL error',
                  anomaly2='TCP source socket error'):
         self.d = {}
         self.last_session_id = 0
@@ -11,7 +12,8 @@ class BatrasioAdapter:
         self.anomaly2 = anomaly2
     def get_session_id(self, log_msg: str):
         """
-        Given the log message, return the corresponding session Id it belongs to.
+        Given the log message, returns the corresponding session Id it belongs
+        to.
         """
         log_msg = log_msg.rstrip()
         procid = re.search(r"^(\d+)", log_msg)[0]

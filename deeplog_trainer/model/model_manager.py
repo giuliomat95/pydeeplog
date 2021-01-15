@@ -17,10 +17,8 @@ class ModelManager:
         self.lstm_units = lstm_units
 
     def build(self):
-        # Consider using an embedding if there are too many different input classes
-        # x = Input(shape=(self.input_size, 1)) # Numerical encoding
-        # x_input = x
-
+        # Consider using an embedding if there are too many different input
+        # classes
         x = Input(shape=(self.input_size, self.num_tokens))
         x_input = x
 
@@ -37,8 +35,11 @@ class ModelManager:
         model.compile(
             loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
             optimizer=tf.keras.optimizers.Adam(1e-3),
-            # Adam algorithm set as optimizer gave the best results in terms of accuracy
-            metrics=['accuracy']  # List of metrics to be evaluated by the model during training and testing.
+            # Adam algorithm set as optimizer gave the best results in terms of
+            # accuracy
+            metrics=['accuracy']
+            # List of metrics to be evaluated by the model during training and
+            # testing.
         )
         return model
 

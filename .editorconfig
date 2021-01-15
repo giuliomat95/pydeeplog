@@ -6,5 +6,8 @@ end_of_line = lf
 indent_size = 4
 indent_style = space
 insert_final_newline = true
-max_line_length = 130
 tab_width = 4
+
+[*.py]
+#Limit all lines of python files to a maximum of 79 characters.
+max_line_length = 80

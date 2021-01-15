@@ -12,11 +12,12 @@ import argparse
 import pickle
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
-input_dir = '/data/'
+input_dir = 'data'
 
 
 def run_drain(logger, input_file, output_file):
-    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + input_dir + input_file, 'r') as f:
+    root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    with open(os.path.join(root_path, input_dir, input_file), 'r') as f:
         adapter = BatrasioAdapter()
         template_miner = TemplateMiner()
         drain = Drain(template_miner)
@@ -28,9 +29,12 @@ def run_drain(logger, input_file, output_file):
             procid = re.search(r"^(\d+)", line)[0]
             content = line.split(procid)[1].strip()
             drain_result = drain.add_message(content)
-            sessions = session_storage.get_sessions(sess_id, drain_result['template_id'])
-            templates = session_storage.get_templates(drain_result['template_id'], drain_result['template'])
-            parameters = session_storage.get_parameters(sess_id, drain_result['params'])
+            sessions = session_storage.get_sessions(sess_id,
+                                                    drain_result['template_id'])
+            templates = session_storage.get_templates\
+                (drain_result['template_id'], drain_result['template'])
+            parameters = session_storage.get_parameters(sess_id,
+                                                        drain_result['params'])
             line_count += 1
             if line_count % 1000 == 0:
                 logger.info('Processed {} log lines.'.format(line_count))
@@ -39,8 +43,10 @@ def run_drain(logger, input_file, output_file):
     # let's import the results in json format
     result = {'data': []}
     for sess_id in sessions:
-        result['data'].append(dict(template_seq=sessions[sess_id], template_params=parameters[sess_id],
-                                   is_normal=anomaly_flag[sess_id], session_id=sess_id))
+        result['data'].append(dict(template_seq=sessions[sess_id],
+                                   template_params=parameters[sess_id],
+                                   is_normal=anomaly_flag[sess_id],
+                                   session_id=sess_id))
 
     with open(output_file + '/data.json', 'w') as f:
         json.dump(result, f)
@@ -56,8 +62,11 @@ def run_drain(logger, input_file, output_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", type=str, help="Put the name of the file to be parsed")
-    parser.add_argument("--output", type=str, help="Put the name of the directory where the results will be saved")
+    parser.add_argument("--input", type=str,
+                        help="Put the name of the file to be parsed")
+    parser.add_argument("--output", type=str,
+                        help="Put the name of the directory where the results "
+                             "will be saved")
     args = parser.parse_args()
     if not os.path.exists(args.output):
         os.mkdir(args.output)
