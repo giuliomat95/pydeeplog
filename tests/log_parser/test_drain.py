@@ -18,6 +18,6 @@ def test_get_parameters(logs, drain):
     result = drain.add_message(logs)
     template = result['template']
     params = result['params']
-    # The number of tokens masked with an asterisk in the template message must be equal to the length of the list that
-    # gather them.
+    # The number of tokens masked with an asterisk in the template message must
+    # be equal to the length of the list that gather them.
     assert len(re.findall(r'<[^<>]+>', template)) == len(params)

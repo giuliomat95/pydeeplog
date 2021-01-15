@@ -28,10 +28,13 @@ def test_dict(logs, setup):
     procid = re.search(r"^(\d+)", logs)[0]
     content = logs.split(procid)[1].strip()
     drain_result = drain.add_message(content)
-    sessions = session_storage.get_sessions(sess_id, drain_result['template_id'])
+    sessions = session_storage.get_sessions(
+        sess_id, drain_result['template_id'])
     parameters = session_storage.get_parameters(sess_id, drain_result['params'])
-    templates = session_storage.get_templates(drain_result['template_id'], drain_result['template'])
-    # The 3 dictionaries must have the same length equivalent to the number of sessions
+    templates = session_storage.get_templates(drain_result['template_id'],
+                                              drain_result['template'])
+    # The 3 dictionaries must have the same length equivalent to the number of
+    # sessions
     assert len(sessions) == len(parameters) == len(anomaly_flag)
     # The templates Id must be integers
     assert set(map(type, templates)) == {int}

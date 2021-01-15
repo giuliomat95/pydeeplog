@@ -13,7 +13,6 @@ logger.basicConfig(level=logger.DEBUG)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.set_defaults()
     parser.add_argument("--filepath", type=str,
                         help="Put the input json dataset filepath from root "
                              "folder")
@@ -59,20 +58,16 @@ if __name__ == '__main__':
             dataset.append(seq)
 
     dataset = np.array(dataset, dtype=object)
-    vocab = list(set([x for seq in dataset for x in
-                      seq]))  # list of unique keys in the training file
-    data_preprocess = DataPreprocess(vocab=vocab, window_size=args.window_size)
-    dataset = data_preprocess.encode_dataset(dataset)
-    train_idx, val_idx, test_idx = \
-        data_preprocess.split_idx(len(dataset), train_ratio=args.train_ratio,
-                                  val_ratio=args.val_ratio)
-    train_dataset = dataset[train_idx]
-    val_dataset = dataset[val_idx]
-    test_dataset = dataset[test_idx]
+    data_preprocess = DataPreprocess(dataset, window_size=args.window_size)
+    dataset = data_preprocess.encode_dataset()
+    train_dataset, val_dataset, test_dataset = \
+        data_preprocess.split_data(train_ratio=args.train_ratio,
+                                   val_ratio=args.val_ratio)
     num_tokens = data_preprocess.get_num_tokens()
     logger.info(
-        'Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx),
-                                            len(test_idx)))
+        'Datasets sizes: {}, {}, {}'.format(len(train_dataset),
+                                            len(val_dataset),
+                                            len(test_dataset)))
     model_manager = ModelManager(input_size=args.window_size,
                                  num_tokens=num_tokens,
                                  lstm_units=args.LSTM_units)
