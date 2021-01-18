@@ -1,21 +1,19 @@
 from deeplog_trainer.model.data_preprocess import DataPreprocess
 import pytest
-import argparse
 import json
 import numpy as np
 import pdb
-
-dataset = []
 WINDOW_SIZE = 7
 @pytest.fixture(scope='function')
-def setup(seq):
-    dataset.append(seq)
-    data_preprocess = DataPreprocess(np.array(dataset, dtype=object),
-                                     window_size=WINDOW_SIZE)
+def setup(dataset):
+    vocab = list(set([x for seq in dataset for x in
+                      seq]))  # list of unique keys in the training file
+    data_preprocess = DataPreprocess(vocab=vocab, window_size=WINDOW_SIZE)
     return data_preprocess
 
 def get_data():
     filepath = 'data/data.json'
+    dataset = []
     with open(filepath, 'r') as fp:
         data = json.load(fp)
         MIN_LENGTH = 4
@@ -26,23 +24,26 @@ def get_data():
             if len(seq) < MIN_LENGTH:
                 # Skip short sequences
                 continue
-            yield seq
+            dataset.append(seq)
+            yield seq, dataset
 
 
-@pytest.mark.parametrize("seq", get_data())
-def test_preprocess(seq, setup):
-    vocab = setup.vocab()
-    # vocab must be a list of integers:
-    assert set(map(type, vocab)) == {int}
-    setup.encode_dataset()
-    assert setup.dict_token2idx()['[PAD]'] == 0
+@pytest.mark.parametrize("seq,dataset", get_data())
+def test_preprocess(seq, dataset, setup):
+    dataset = np.array(dataset, dtype=object)
+    dataset = setup.encode_dataset(dataset)
+    assert setup.get_dictionaries()[1]['[PAD]'] == 0
     list_of_chunks = setup.chunks_seq(seq)
+    # pdb.set_trace()
     if len(seq) > WINDOW_SIZE:
         assert np.shape(list_of_chunks) == (len(seq)-WINDOW_SIZE+1, WINDOW_SIZE)
     else:
         assert np.shape(list_of_chunks) == (1, len(seq))
-    train_dataset, val_dataset, test_dataset = \
-        setup.split_data(train_ratio=0.7, val_ratio=0.85)
+    train_idx, val_idx, test_idx = \
+        setup.split_idx(len(dataset), train_ratio=0.7, val_ratio=0.85)
+    train_dataset = dataset[train_idx]
+    val_dataset = dataset[val_idx]
+    test_dataset = dataset[test_idx]
     assert len(train_dataset) == int(len(dataset)*0.7)
     assert len(train_dataset) + len(val_dataset) == int(len(dataset)*0.85)
     train_chunks = setup.chunks(train_dataset)

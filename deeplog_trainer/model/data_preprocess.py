@@ -6,7 +6,7 @@ tf.random.set_seed(42)
 
 
 class DataPreprocess:
-    def __init__(self, dataset: list, window_size=10):
+    def __init__(self, vocab: list, window_size=10):
         """
         Description:
         + Encodes log keys with additional values for padding, unknown keys and
@@ -17,7 +17,7 @@ class DataPreprocess:
         window size is, the more accurate the model is. However, workflows are
         less accurate.
         Attributes:
-        :param dataset (list): An array containing the sequences to be parsed
+        :param vocab (list): List of unique keys in the dataset
         :param window_size (int): Length of the chunks that are going to be the
         inputs of the model
         """
@@ -26,50 +26,39 @@ class DataPreprocess:
         # length,
         # UNK replace unknown tokens, END labels the end of the sequences fed
         # into the encoder.
-        self.dataset = dataset
+        self.vocab = vocab
+        self.num_tokens = len(self.vocab) + len(self.special_tokens)
         self.window_size = window_size
+        # Build dictionaries of tokens
+        self.dict_idx2token = self.special_tokens + vocab
+        self.dict_token2idx = {value: key for key, value in
+                               enumerate(self.dict_idx2token)}
 
-    def vocab(self):
-        """
-        Returns list of unique keys in the training file
-        """
-        return list(set([x for seq in self.dataset for x in seq]))
+        # PAD token must be in the position 0
+        assert self.dict_token2idx['[PAD]'] == 0
 
     def get_num_tokens(self):
         """
         Returns number of log keys + the number of spacial tokens
         """
-        return len(self.vocab()) + len(self.special_tokens)
+        return self.num_tokens
 
-    def dict_idx2token(self):
-        """Builds dictionary of tokens"""
-        return self.special_tokens + self.vocab()
-
-    def dict_token2idx(self):
-        """Encodes tokens to indexes"""
-        dict_token2idx = {value: key for key, value in
-                          enumerate(self.dict_idx2token())}
-        # PAD token must be in the position 0
-        assert dict_token2idx['[PAD]'] == 0
-        return dict_token2idx
-
-    def encode_dataset(self):
+    def encode_dataset(self, dataset):
         """
         Encodes values of the dataset. The unknown tokens are replaced by the
         the corresponding index of the token 'UNK'.
         """
-        for i, seq in enumerate(self.dataset):
-            self.dataset[i] = [self.dict_token2idx()[x]
-                               if x in self.dict_token2idx()
-                               else self.dict_token2idx()['[UNK]'] for x in seq]
-        return self.dataset
+        for i, seq in enumerate(dataset):
+            dataset[i] = [self.dict_token2idx[x] if x in self.dict_token2idx
+                          else self.dict_token2idx['[UNK]'] for x in seq]
+        return dataset
 
-    def chunks(self, data):
+    def chunks(self, dataset):
         """
-        Splits the data in smaller chunks with window_size as maximum length.
+        Splits the dataset in smaller chunks with window_size as maximum length.
         """
         chunks = []
-        for seq in data:
+        for seq in dataset:
             chunks += self.chunks_seq(seq)
         return chunks
 
@@ -91,7 +80,7 @@ class DataPreprocess:
             chunks = [seq]
         return chunks
 
-    def transform(self, data, add_padding=0):
+    def transform(self, dataset, add_padding=0):
         """
         Prepares the data to be consumed by the ML model. If used, it should
         come after chunks method.
@@ -99,43 +88,43 @@ class DataPreprocess:
         # Split into input and target values
         X_data = []
         y_data = []
-        for seq in data:
-            X_data.append(seq[:-1] + [self.dict_token2idx()['[END]']])
+        for seq in dataset:
+            X_data.append(seq[:-1] + [self.dict_token2idx['[END]']])
             y_data.append(seq[-1])
 
         # Add padding if necessary
         if add_padding > 0:
             X_data = pad_sequences(X_data, maxlen=add_padding,
-                                   value=self.dict_token2idx()['[PAD]'],
+                                   value=self.dict_token2idx['[PAD]'],
                                    padding='post')
             # Pads input sequences. The ones whose length is smaller than
             # 'maxlen' padded with 'value' until they reach all the same length
         # One hot encoding: Return vectors with all zeros but 1 in the in the
         # indices position passed in input.
-        X_data = np.array(tf.one_hot(X_data, self.get_num_tokens()))
-        y_data = np.array(tf.one_hot(y_data, self.get_num_tokens()))
+        X_data = np.array(tf.one_hot(X_data, self.num_tokens))
+        y_data = np.array(tf.one_hot(y_data, self.num_tokens))
 
         return X_data, y_data
 
-    def split_data(self, train_ratio, val_ratio):
+    @staticmethod
+    def split_idx(dataset_size, train_ratio, val_ratio):
         """
-        Splits indices of the data to create the usual three subsets: training,
+        Splits indices of the data into the usual three subsets: training,
         validation and testing.
 
         Arguments:
+        - dataset_size
         - train_ratio (float): defines the subset for training.
         - val_ratio (float): defines the subset for validation (must be greater
         than train_ratio).
 
         Returns: three subsets of the input dataset.
         """
-        dataset_size = len(self.dataset)
         train_idx, val_idx, test_idx = \
             np.split(np.arange(dataset_size),
                      [int(train_ratio * dataset_size),
                       int(val_ratio * dataset_size)])
-        print(type(self.dataset))
-        train_dataset = self.dataset[train_idx]
-        val_dataset = self.dataset[val_idx]
-        test_dataset = self.dataset[test_idx]
-        return train_dataset, val_dataset, test_dataset
+        return train_idx, val_idx, test_idx
+
+    def get_dictionaries(self):
+        return self.dict_idx2token, self.dict_token2idx
