@@ -134,6 +134,7 @@ class DataPreprocess:
             np.split(np.arange(dataset_size),
                      [int(train_ratio * dataset_size),
                       int(val_ratio * dataset_size)])
+        print(type(self.dataset))
         train_dataset = self.dataset[train_idx]
         val_dataset = self.dataset[val_idx]
         test_dataset = self.dataset[test_idx]
