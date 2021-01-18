@@ -8,7 +8,7 @@ WINDOW_SIZE = 7
 def setup(dataset):
     vocab = list(set([x for seq in dataset for x in
                       seq]))  # list of unique keys in the training file
-    data_preprocess = DataPreprocess(vocab=vocab, window_size=WINDOW_SIZE)
+    data_preprocess = DataPreprocess(vocab=vocab)
     return data_preprocess
 
 def get_data():
@@ -33,7 +33,7 @@ def test_preprocess(seq, dataset, setup):
     dataset = np.array(dataset, dtype=object)
     dataset = setup.encode_dataset(dataset)
     assert setup.get_dictionaries()[1]['[PAD]'] == 0
-    list_of_chunks = setup.chunks_seq(seq)
+    list_of_chunks = setup.chunks_seq(seq, window_size=WINDOW_SIZE)
     # pdb.set_trace()
     if len(seq) > WINDOW_SIZE:
         assert np.shape(list_of_chunks) == (len(seq)-WINDOW_SIZE+1, WINDOW_SIZE)
@@ -43,10 +43,9 @@ def test_preprocess(seq, dataset, setup):
         setup.split_idx(len(dataset), train_ratio=0.7, val_ratio=0.85)
     train_dataset = dataset[train_idx]
     val_dataset = dataset[val_idx]
-    test_dataset = dataset[test_idx]
     assert len(train_dataset) == int(len(dataset)*0.7)
     assert len(train_dataset) + len(val_dataset) == int(len(dataset)*0.85)
-    train_chunks = setup.chunks(train_dataset)
+    train_chunks = setup.chunks(train_dataset, window_size=WINDOW_SIZE)
     X_train, y_train = setup.transform(
         train_chunks,
         add_padding=WINDOW_SIZE

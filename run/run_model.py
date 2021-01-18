@@ -60,7 +60,7 @@ if __name__ == '__main__':
     dataset = np.array(dataset, dtype=object)
     vocab = list(set([x for seq in dataset for x in
                       seq]))  # list of unique keys in the training file
-    data_preprocess = DataPreprocess(vocab=vocab, window_size=args.window_size)
+    data_preprocess = DataPreprocess(vocab=vocab)
     dataset = data_preprocess.encode_dataset(dataset)
     train_idx, val_idx, test_idx = \
         data_preprocess.split_idx(len(dataset), train_ratio=args.train_ratio,
@@ -79,11 +79,11 @@ if __name__ == '__main__':
     model = model_manager.build()
     model.summary()
     X_train, y_train = data_preprocess.transform(
-        data_preprocess.chunks(train_dataset),
+        data_preprocess.chunks(train_dataset, window_size=args.window_size),
         add_padding=args.window_size
     )
     X_val, y_val = data_preprocess.transform(
-        data_preprocess.chunks(val_dataset),
+        data_preprocess.chunks(val_dataset, window_size=args.window_size),
         add_padding=args.window_size
     )
     model_trainer = ModelTrainer(logger, epochs=args.n_epochs,

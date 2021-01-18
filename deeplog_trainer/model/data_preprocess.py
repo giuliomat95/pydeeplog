@@ -6,7 +6,7 @@ tf.random.set_seed(42)
 
 
 class DataPreprocess:
-    def __init__(self, vocab: list, window_size=10):
+    def __init__(self, vocab: list):
         """
         Description:
         + Encodes log keys with additional values for padding, unknown keys and
@@ -18,8 +18,6 @@ class DataPreprocess:
         less accurate.
         Attributes:
         :param vocab (list): List of unique keys in the dataset
-        :param window_size (int): Length of the chunks that are going to be the
-        inputs of the model
         """
         self.special_tokens = ['[PAD]', '[UNK]', '[END]']
         # PAD is the token to pad the sequences such that they all have the same
@@ -28,7 +26,6 @@ class DataPreprocess:
         # into the encoder.
         self.vocab = vocab
         self.num_tokens = len(self.vocab) + len(self.special_tokens)
-        self.window_size = window_size
         # Build dictionaries of tokens
         self.dict_idx2token = self.special_tokens + vocab
         self.dict_token2idx = {value: key for key, value in
@@ -53,27 +50,28 @@ class DataPreprocess:
                           else self.dict_token2idx['[UNK]'] for x in seq]
         return dataset
 
-    def chunks(self, dataset):
+    def chunks(self, dataset, window_size):
         """
         Splits the dataset in smaller chunks with window_size as maximum length.
         """
         chunks = []
         for seq in dataset:
-            chunks += self.chunks_seq(seq)
+            chunks += self.chunks_seq(seq, window_size)
         return chunks
 
-    def chunks_seq(self, seq):
+    @staticmethod
+    def chunks_seq(seq, window_size):
         """
         Splits a sequence in smaller chunks with window_size as maximum length.
         Return a list of lists of size (len(seq)-window_size+1,window_size)
         """
         chunks = []
-        if len(seq) > self.window_size:
+        if len(seq) > window_size:
             # If the sequence is longer than the window size, drag the window
             # and split as many sequences as possible
             i = 0
-            while i + self.window_size <= len(seq):
-                x = seq[i:(i + self.window_size)]
+            while i + window_size <= len(seq):
+                x = seq[i:(i + window_size)]
                 chunks.append(x)
                 i += 1
         else:
