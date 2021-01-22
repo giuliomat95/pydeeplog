@@ -2,7 +2,6 @@ from deeplog_trainer.model.data_preprocess import DataPreprocess
 import pytest
 import json
 import numpy as np
-import pdb
 WINDOW_SIZE = 7
 @pytest.fixture(scope='function')
 def setup(dataset):
@@ -34,7 +33,6 @@ def test_preprocess(seq, dataset, setup):
     dataset = setup.encode_dataset(dataset)
     assert setup.get_dictionaries()[1]['[PAD]'] == 0
     list_of_chunks = setup.chunks_seq(seq, window_size=WINDOW_SIZE)
-    # pdb.set_trace()
     if len(seq) > WINDOW_SIZE:
         assert np.shape(list_of_chunks) == (len(seq)-WINDOW_SIZE+1, WINDOW_SIZE)
     else:

@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from deeplog_trainer.model.data_preprocess import DataPreprocess
 from deeplog_trainer.model.model_manager import ModelManager
-from deeplog_trainer.model.training import ValLossLogger, ModelTrainer
+from deeplog_trainer.model.training import ModelTrainer
 from deeplog_trainer.model.model_evaluator import ModelEvaluator
 import argparse
 import json
