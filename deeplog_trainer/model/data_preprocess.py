@@ -2,20 +2,19 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-tf.random.set_seed(42)
-
-
 class DataPreprocess:
+    """
+    Description:
+    + Encodes log keys with additional values for padding, unknown keys and
+    ending key
+    + Randomly splits the dataset as usually: train (70%), validation (15$)
+    and test (15$)
+    + Splits into chunks of size `WINDOW_SIZE`. Note that, the longer the
+    window size is, the more accurate the model is. However, workflows are
+    less accurate.
+    """
     def __init__(self, vocab: list):
         """
-        Description:
-        + Encodes log keys with additional values for padding, unknown keys and
-        ending key
-        + Randomly splits the dataset as usually: train (70%), validation (15$)
-        and test (15$)
-        + Splits into chunks of size `WINDOW_SIZE`. Note that, the longer the
-        window size is, the more accurate the model is. However, workflows are
-        less accurate.
         Attributes:
         :param vocab (list): List of unique keys in the dataset
         """
@@ -36,7 +35,7 @@ class DataPreprocess:
 
     def get_num_tokens(self):
         """
-        Returns number of log keys + the number of spacial tokens
+        Returns number of log keys + the number of special tokens
         """
         return self.num_tokens
 

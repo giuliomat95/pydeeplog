@@ -50,21 +50,24 @@ coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 ```
 ## Run Model
 To run the `run_model.py` file, set the following parameters in the command line:
-+ filepath: file path of the json dataset to parse.
++ input_file: path of the input json dataset to parse.
 + window_size: length of chunks, input of the LSTM neural network. Default value set to 10.
 + min_length: the minimum length of a sequence to be parsed. Default value set to 4.
-+ output: filepath of the output model file.
++ output_file: path of the output model file.
 + LSTM_units: number of units in each LSTM layer. Default value set to 64.
 + train_ratio: it defines the train set. Default value set to 0.7.
 + val_ratio: it defines the validation set. Default value set to 0.85.
 + batch_size: number of samples that will be propagated through the network. Default value set to 512.
 + early_stop: number of epochs with no improvement after which training will be stopped. Default value set to 7.
-
++ max_epochs: maximum number of epochs if the process is not stopped before by the early_stop. Default value set to 50.
++ out_tensorboard_path: name of the folder where to save the tensorboard results. If empty any board is stored. 
+  Default value set to `None`.
+  
 Execute the command `python3 -m run.run_model.py -h` to display of arguments.
 Example of execution:
 ```
-python3 -m path.to.script.run.run_model.py --filepath run/batrasio_result/data.json --output model_result/model --window_size 12 
---n_epochs 100 --train_ratio 0.5 --val_ratio 0.75
+python3 -m path.to.script.run.run_model.py --input_file run/batrasio_result/data.json --output_file model_result/model.h5 
+--window_size 12 --max_epochs 100 --train_ratio 0.5 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 ## Tensorboard
 To visualize the evolution of the loss/accuracy trend of the train/validation process, run the following code from the root folder:

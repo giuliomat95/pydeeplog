@@ -58,13 +58,14 @@ class ValLossLogger(tf.keras.callbacks.Callback):
 
 
 class ModelTrainer:
-
+    """
+    Description: Once the numerical representation of each session is ready,
+    DeepLog treats these sequences as a Multi-class Time Series
+    Classification, which is a supervised learning problem aiming to predict
+    class labels over the time based on past behaviour.
+    """
     def __init__(self, logger, epochs, batch_size, early_stop):
         """
-        Description: Once the numerical representation of each session is ready,
-        DeepLog treats these sequences as a Multi-class Time Series
-        Classification, which is a supervised learning problem aiming to predict
-        class labels over the time based on past behaviour.
         :param logger: logger function from logging module
         :param epochs: Number of times the entire dataset is passed forward and
          backward by the neural network
@@ -78,12 +79,15 @@ class ModelTrainer:
         self.batch_size = batch_size
         self.early_stop = early_stop
 
-    def train(self, model, train_dataset, val_dataset):
+    def train(self, model, train_dataset, val_dataset,
+              out_tensorboard_path=None):
         """
         Given the model, the train and validation set as arguments, the method
         train process is trigger. The model checkpoints allows to save the model
         according to the 'monitor' index.
-        :argument model: tensorflow model in h5 format
+        :argument out_tensorboard_path: output path where to save the
+        tensorboard results
+        :argument model: a Keras model instance
         :argument train_dataset: train set type array
         :argument val_dataset: validation set type array
         """
@@ -92,28 +96,24 @@ class ModelTrainer:
             # Stop training when `val_loss` is no longer improving
             monitor='val_loss',
             patience=self.early_stop,
+            restore_best_weights=True,
             verbose=0)
-
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            filepath = os.path.join(tmpdirname,
-                                    'checkpoint.{epoch:02d}-{val_loss:.2f}.hdf5'
-                                    )
-            # Periodically save the model
-            model_ckpt = tf.keras.callbacks.ModelCheckpoint(
-                filepath=filepath, monitor='val_accuracy', verbose=0,
-                save_best_only=True, save_weights_only=True)
-
+        tensorboard_callback = []
+        if out_tensorboard_path is not None:
             tensorboard_callback = tf.keras.callbacks.TensorBoard(
-                log_dir='logdir', histogram_freq=0, embeddings_freq=0)
-            history = model.fit(
+                log_dir=out_tensorboard_path,
+                histogram_freq=0,
+                embeddings_freq=0)
+        history = model.fit(
                 train_dataset[0],
                 train_dataset[1],
                 validation_data=(val_dataset[0], val_dataset[1]),
                 epochs=self.epochs,
                 batch_size=self.batch_size,
-                callbacks=[train_logger, model_ckpt, early_stop,
-                           tensorboard_callback],
+                callbacks=[train_logger, early_stop, tensorboard_callback]
+                if out_tensorboard_path is not None
+                else [train_logger, early_stop],
                 shuffle=False,
-                verbose=1
-            )
+                verbose=0
+        )
         return history

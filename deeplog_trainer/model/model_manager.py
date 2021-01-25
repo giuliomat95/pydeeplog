@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, LSTM, Dense
-
+import os
 
 class ModelManager:
     def __init__(self, input_size, num_tokens, lstm_units):
@@ -34,17 +34,15 @@ class ModelManager:
 
         model.compile(
             loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
-            optimizer=tf.keras.optimizers.Adam(1e-3),
             # Adam algorithm set as optimizer gave the best results in terms of
             # accuracy
+            optimizer=tf.keras.optimizers.Adam(1e-3),
             metrics=['accuracy']
-            # List of metrics to be evaluated by the model during training and
-            # testing.
         )
         return model
 
-    def save(self, model, filepath, filename):
-        model.save(filepath + '/' + filename, save_format='h5')
+    def save(self, model, output_file):
+        model.save(output_file, save_format='h5')
 
     def load(self, filepath):
         model = load_model(filepath)
