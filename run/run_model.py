@@ -97,8 +97,8 @@ if __name__ == '__main__':
     model_manager.save(model, args.output, args.filename)
     # Calculate scores for different K values in the validation set
     for k in range(1, 5):
-        model_evaluator = ModelEvaluator(model, X_val, y_val, top_k=k)
-        scores = model_evaluator.compute_scores()
+        model_evaluator = ModelEvaluator(model, top_k=k)
+        scores = model_evaluator.compute_scores(X_val, y_val)
         print('-' * 10, 'K = %d' % k, '-' * 10)
         print('- Num. items: %d' % scores['n_items'])
         print('- Num. normal: %d' % scores['n_normal'])

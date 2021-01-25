@@ -1,12 +1,14 @@
 import numpy as np
 import tensorflow as tf
+
+
 class MockModel:
-    def __init__(self, model_path: str = None):
-        pass
+    def __init__(self, predict_output=None):
+        self.predict_output = predict_output
 
     def fit(self, X: np.ndarray, y: np.ndarray, validation_data, epochs,
             batch_size, callbacks, shuffle, verbose):
         return self
 
-
-
+    def predict(self, X_data):
+        return self.predict_output
