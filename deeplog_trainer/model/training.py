@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import os
-import tempfile
+
 
 class ValLossLogger(tf.keras.callbacks.Callback):
     def __init__(self, logger, loss_index='loss', metric_index='accuracy'):
@@ -18,7 +17,7 @@ class ValLossLogger(tf.keras.callbacks.Callback):
         # training and the validation process
         self.best_loss = {'train': np.Inf, 'val': np.Inf}
         self.best_metric = {'train': 0, 'val': 0}
-        # Let's declare that the ValLossLogger class inherits from the Callback
+        # Declare that the ValLossLogger class inherits from the Callback
         # class in Keras
         super().__init__()
 
@@ -98,19 +97,20 @@ class ModelTrainer:
             patience=self.early_stop,
             restore_best_weights=True,
             verbose=0)
-        tensorboard_callback = []
+        callbacks = [train_logger, early_stop]
         if out_tensorboard_path is not None:
             tensorboard_callback = tf.keras.callbacks.TensorBoard(
                 log_dir=out_tensorboard_path,
                 histogram_freq=0,
                 embeddings_freq=0)
+            callbacks.append(tensorboard_callback)
         history = model.fit(
                 train_dataset[0],
                 train_dataset[1],
                 validation_data=(val_dataset[0], val_dataset[1]),
                 epochs=self.epochs,
                 batch_size=self.batch_size,
-                callbacks=[train_logger, early_stop, tensorboard_callback]
+                callbacks=callbacks
                 if out_tensorboard_path is not None
                 else [train_logger, early_stop],
                 shuffle=False,

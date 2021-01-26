@@ -3,6 +3,7 @@ from deeplog_trainer.log_parser.drain import Drain
 import pytest
 import re
 
+
 @pytest.fixture(scope='session')
 def drain():
     template_miner = TemplateMiner()

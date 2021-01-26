@@ -2,11 +2,14 @@ from deeplog_trainer.model.data_preprocess import DataPreprocess
 import pytest
 import json
 import numpy as np
+
+
 WINDOW_SIZE = 7
+
 @pytest.fixture(scope='function')
 def setup(dataset):
-    vocab = list(set([x for seq in dataset for x in
-                      seq]))  # list of unique keys in the training file
+    # List of unique keys in the training file
+    vocab = list(set([x for seq in dataset for x in seq]))
     data_preprocess = DataPreprocess(vocab=vocab)
     return data_preprocess
 
@@ -17,15 +20,12 @@ def get_data():
         data = json.load(fp)
         MIN_LENGTH = 4
         for d in data['data']:
-            seq = d['template_seq'][1:]
-            # the first element is skipped since in batrasio data all
-            # the sequences start with the same encoding number
+            seq = d['template_seq']
             if len(seq) < MIN_LENGTH:
                 # Skip short sequences
                 continue
             dataset.append(seq)
             yield seq, dataset
-
 
 @pytest.mark.parametrize("seq,dataset", get_data())
 def test_preprocess(seq, dataset, setup):
@@ -51,5 +51,3 @@ def test_preprocess(seq, dataset, setup):
     assert np.shape(X_train) == (len(train_chunks), WINDOW_SIZE,
                                  setup.get_num_tokens())
     assert np.shape(y_train) == (len(train_chunks), setup.get_num_tokens())
-
-

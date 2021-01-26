@@ -14,12 +14,10 @@ def setup():
     session_storage = SessionStorage()
     return adapter, drain, session_storage
 
-
 def get_data():
     with open('data/sample_test.log') as f:
         for line in f:
             yield line.strip()
-
 
 @pytest.mark.parametrize("logs", get_data())
 def test_dict(logs, setup):

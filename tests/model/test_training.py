@@ -7,6 +7,7 @@ import json
 import numpy as np
 from testfixtures import LogCapture
 
+
 @pytest.fixture(scope='function')
 def setup(dataset):
     vocab = list(set([x for seq in dataset for x in
@@ -39,7 +40,7 @@ def get_data():
         yield dataset
 
 @pytest.mark.parametrize("dataset", get_data())
-def test_model_manager_WhenModelIsMocked(setup, dataset, capture):
+def test_model_trainer(setup, dataset, capture):
     WINDOW_SIZE = 7
     data_preprocess, train_logger, model_trainer = setup
     dataset = np.array(dataset, dtype=object)
@@ -69,9 +70,3 @@ def test_model_manager_WhenModelIsMocked(setup, dataset, capture):
         ('root', 'INFO', 'Training finished')
     )
     assert isinstance(history, MockModel)
-
-
-
-
-
-

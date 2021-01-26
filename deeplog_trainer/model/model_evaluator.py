@@ -48,7 +48,6 @@ class ModelEvaluator:
         n_items = len(X_data)
         n_correct = n_items - len(self.get_anomalies_idx(X_data, y_data))
         accuracy = n_items and n_correct / n_items
-
         return {
             'n_items': n_items,
             'n_correct': n_correct,

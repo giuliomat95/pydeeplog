@@ -4,6 +4,7 @@ from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Input, LSTM, Dense
 import os
 
+
 class ModelManager:
     def __init__(self, input_size, num_tokens, lstm_units):
         """
@@ -41,8 +42,8 @@ class ModelManager:
         )
         return model
 
-    def save(self, model, output_file):
-        model.save(output_file, save_format='h5')
+    def save(self, model, output_path, output_file):
+        model.save(os.path.join(output_path, output_file), save_format='h5')
 
     def load(self, filepath):
         model = load_model(filepath)

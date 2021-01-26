@@ -1,6 +1,7 @@
 from deeplog_trainer.model.model_manager import ModelManager
 import pytest
 
+
 @pytest.fixture(scope='class')
 def setup():
     window_size = 10
@@ -11,4 +12,3 @@ def setup():
 def test_model_manager(setup):
     model = setup.build()
     assert model.output_shape[1] == setup.num_tokens
-

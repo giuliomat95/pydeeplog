@@ -1,15 +1,19 @@
-import os
-import sys
-import numpy as np
-from deeplog_trainer.model.data_preprocess import DataPreprocess
-from deeplog_trainer.model.model_manager import ModelManager
-from deeplog_trainer.model.training import ModelTrainer
-from deeplog_trainer.model.model_evaluator import ModelEvaluator
 import argparse
 import json
 import logging as logger
+import os
+import sys
+
+import numpy as np
+
+from deeplog_trainer.model.data_preprocess import DataPreprocess
+from deeplog_trainer.model.model_evaluator import ModelEvaluator
+from deeplog_trainer.model.model_manager import ModelManager
+from deeplog_trainer.model.training import ModelTrainer
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logger.basicConfig(level=logger.DEBUG)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -21,8 +25,10 @@ if __name__ == '__main__':
     parser.add_argument("--min_length", type=int,
                         help="Put the minimum length of a sequence to be "
                              "parsed", default=4)
+    parser.add_argument("--output_path", type=str,
+                        help="Put the path of the output directory")
     parser.add_argument("--output_file", type=str,
-                        help="Put the the path of the output model file")
+                        help="Put the the name of the output model file")
     parser.add_argument("--LSTM_units", type=int,
                         help="Put the number of units in each LSTM layer",
                         default=64)
@@ -59,8 +65,8 @@ if __name__ == '__main__':
             dataset.append(seq)
 
     dataset = np.array(dataset, dtype=object)
-    vocab = list(set([x for seq in dataset for x in
-                      seq]))  # list of unique keys in the training file
+    # List of unique keys in the training file
+    vocab = list(set([x for seq in dataset for x in seq]))
     data_preprocess = DataPreprocess(vocab=vocab)
     dataset = data_preprocess.encode_dataset(dataset)
     train_idx, val_idx, test_idx = \
@@ -94,9 +100,9 @@ if __name__ == '__main__':
     model_trainer.train(model, [X_train, y_train], [X_val, y_val],
                         out_tensorboard_path=args.out_tensorboard_path)
     # Save the model
-    if not os.path.exists(os.path.dirname(args.output_file)):
-        os.mkdir(os.path.dirname(args.output_file))
-    model_manager.save(model, args.output_file)
+    if not os.path.exists(args.output_path):
+        os.mkdir(args.output_path)
+    model_manager.save(model, args.output_path, args.output_file)
     # Calculate scores for different K values in the validation set
     for k in range(1, 5):
         model_evaluator = ModelEvaluator(model, top_k=k)

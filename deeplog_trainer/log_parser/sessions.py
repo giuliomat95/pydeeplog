@@ -36,4 +36,3 @@ class SessionStorage:
         else:
             self.parameters[sess_id].append(parameter)
         return self.parameters
-

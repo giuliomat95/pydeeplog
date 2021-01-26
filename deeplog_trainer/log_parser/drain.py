@@ -1,5 +1,6 @@
 import re
 
+
 class Drain:
     def __init__(self, template_miner):
         self.template_miner = template_miner
@@ -15,7 +16,7 @@ class Drain:
         if "<*>" not in template_regex: return []
         template_regex = re.sub(r'([^A-Za-z0-9])', r'\\\1', template_regex)
         template_regex = re.sub(r'\\\t+', r'\t', template_regex)
-        # let's replace any '\ ' by ' '
+        # Replace any '\ ' by ' '
         template_regex = re.sub(r'\\ +', r' ', template_regex)
         template_regex = "^" + template_regex.replace("\<\*\>", "(.*?)") + "$"
         parameter_list = re.findall(template_regex, content)

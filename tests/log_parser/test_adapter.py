@@ -1,6 +1,7 @@
 from deeplog_trainer.log_parser.adapter import BatrasioAdapter
 import pytest
 
+
 @pytest.fixture(scope='session')
 def adapter():
     return BatrasioAdapter()
@@ -14,7 +15,7 @@ def get_data():
 @pytest.mark.parametrize("logs,expected", get_data())
 def test_get_sessionId(logs, expected, adapter):
     sess_id, anomaly_flag = adapter.get_session_id(log_msg=logs)
-    # Let's verify the result correspond to what we expect
+    # Verify the result correspond to what we expect
     assert sess_id == expected
     # The flag indicator of the anomalous nature of the sessions must be a
     # boolean

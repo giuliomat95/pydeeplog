@@ -1,5 +1,6 @@
 import re
 
+
 class BatrasioAdapter:
     def __init__(self, delimiter='TCP source connection created',
                  anomaly1='TCP source SSL error',
@@ -10,6 +11,7 @@ class BatrasioAdapter:
         self.delimiter = delimiter
         self.anomaly1 = anomaly1
         self.anomaly2 = anomaly2
+
     def get_session_id(self, log_msg: str):
         """
         Given the log message, returns the corresponding session Id it belongs
