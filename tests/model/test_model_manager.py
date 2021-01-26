@@ -3,8 +3,7 @@ import pytest
 
 
 @pytest.fixture(scope='class')
-def setup():
-    window_size = 10
+def setup(window_size=10):
     model_manager = ModelManager(input_size=window_size, lstm_units=64,
                                  num_tokens=27)
     return model_manager

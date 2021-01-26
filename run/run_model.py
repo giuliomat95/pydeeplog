@@ -54,7 +54,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     dataset = []
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    # load the data parsed from Drain:
+    # Load the data parsed from Drain:
     with open(os.path.join(root_path, args.input_file), 'r') as fp:
         data = json.load(fp)
         for d in data['data']:
@@ -111,3 +111,8 @@ if __name__ == '__main__':
         logger.info('- Num. items: {}'.format(scores['n_items']))
         logger.info('- Num. normal: {}'.format(scores['n_correct']))
         logger.info('- Accuracy: {:.4f}'.format(scores['accuracy']))
+    # Save config values in a json file:
+    with open(args.output_path + '/config.json', 'w') as f:
+        par = dict(window_size=args.window_size, min_length=args.min_length)
+        json.dump(par, f)
+        f.close()

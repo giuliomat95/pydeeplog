@@ -66,9 +66,9 @@ class DataPreprocess:
         Return a list of lists of size (len(seq)-window_size+1,window_size)
         """
         chunks = []
+        # If the sequence is longer than the window size, drag the window
+        # and split as many sequences as possible
         if len(seq) > window_size:
-            # If the sequence is longer than the window size, drag the window
-            # and split as many sequences as possible
             i = 0
             while i + window_size <= len(seq):
                 x = seq[i:(i + window_size)]
@@ -92,11 +92,11 @@ class DataPreprocess:
 
         # Add padding if necessary
         if add_padding > 0:
+            # Pads input sequences. The ones whose length is smaller than
+            # 'maxlen' padded with 'value' until they reach all the same length
             X_data = pad_sequences(X_data, maxlen=add_padding,
                                    value=self.dict_token2idx['[PAD]'],
                                    padding='post')
-            # Pads input sequences. The ones whose length is smaller than
-            # 'maxlen' padded with 'value' until they reach all the same length
         # One hot encoding: Return vectors with all zeros but 1 in the in the
         # indices position passed in input.
         X_data = np.array(tf.one_hot(X_data, self.num_tokens))

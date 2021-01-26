@@ -33,10 +33,10 @@ class ModelEvaluator:
 
     def predict(self, X_data):
         """Returns  the top_k indexes with the highest probability value"""
-        y_pred = self.model.predict(X_data)  # Return a probability value
-        # for each index between 1 and the number of tokens of being the next
-        # key of the previous sequence
-        # assert len(y_pred[1])==num_tokens
+        # For each index between 1 and the number of
+        # tokens, return the probability value of being the next key of the
+        # previous sequence
+        y_pred = self.model.predict(X_data)
         y_pred = y_pred.argsort()[:, -self.top_k:]
         return y_pred
 

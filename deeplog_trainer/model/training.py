@@ -110,9 +110,7 @@ class ModelTrainer:
                 validation_data=(val_dataset[0], val_dataset[1]),
                 epochs=self.epochs,
                 batch_size=self.batch_size,
-                callbacks=callbacks
-                if out_tensorboard_path is not None
-                else [train_logger, early_stop],
+                callbacks=callbacks,
                 shuffle=False,
                 verbose=0
         )

@@ -10,8 +10,8 @@ from testfixtures import LogCapture
 
 @pytest.fixture(scope='function')
 def setup(dataset):
-    vocab = list(set([x for seq in dataset for x in
-                      seq]))  # list of unique keys in the training file
+    # List of unique keys in the training file
+    vocab = list(set([x for seq in dataset for x in seq]))
     data_preprocess = DataPreprocess(vocab=vocab)
     train_logger = ValLossLogger(logger)
     model_trainer = ModelTrainer(logger, epochs=50, early_stop=7,
@@ -23,25 +23,21 @@ def capture():
     with LogCapture() as capture:
         yield capture
 
-def get_data():
+def get_data(min_length=4):
     filepath = 'data/data.json'
     dataset = []
     with open(filepath, 'r') as fp:
         data = json.load(fp)
-        MIN_LENGTH = 4
         for d in data['data']:
-            seq = d['template_seq'][1:]
-            # the first element is skipped since in batrasio data all
-            # the sequences start with the same encoding number
-            if len(seq) < MIN_LENGTH:
+            seq = d['template_seq']
+            if len(seq) < min_length:
                 # Skip short sequences
                 continue
             dataset.append(seq)
         yield dataset
 
 @pytest.mark.parametrize("dataset", get_data())
-def test_model_trainer(setup, dataset, capture):
-    WINDOW_SIZE = 7
+def test_model_trainer(setup, dataset, capture, window_size=7):
     data_preprocess, train_logger, model_trainer = setup
     dataset = np.array(dataset, dtype=object)
     dataset = data_preprocess.encode_dataset(dataset)
@@ -51,12 +47,12 @@ def test_model_trainer(setup, dataset, capture):
     train_dataset = dataset[train_idx]
     val_dataset = dataset[val_idx]
     X_train, y_train = data_preprocess.transform(
-        data_preprocess.chunks(train_dataset, window_size=WINDOW_SIZE),
-        add_padding=WINDOW_SIZE
+        data_preprocess.chunks(train_dataset, window_size=window_size),
+        add_padding=window_size
     )
     X_val, y_val = data_preprocess.transform(
-        data_preprocess.chunks(val_dataset, window_size=WINDOW_SIZE),
-        add_padding=WINDOW_SIZE
+        data_preprocess.chunks(val_dataset, window_size=window_size),
+        add_padding=window_size
     )
     mocked_model = MockModel()
     train_logger.on_train_begin()

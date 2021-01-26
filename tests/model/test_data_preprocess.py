@@ -4,8 +4,6 @@ import json
 import numpy as np
 
 
-WINDOW_SIZE = 7
-
 @pytest.fixture(scope='function')
 def setup(dataset):
     # List of unique keys in the training file
@@ -13,28 +11,27 @@ def setup(dataset):
     data_preprocess = DataPreprocess(vocab=vocab)
     return data_preprocess
 
-def get_data():
+def get_data(min_length=4):
     filepath = 'data/data.json'
     dataset = []
     with open(filepath, 'r') as fp:
         data = json.load(fp)
-        MIN_LENGTH = 4
         for d in data['data']:
             seq = d['template_seq']
-            if len(seq) < MIN_LENGTH:
+            if len(seq) < min_length:
                 # Skip short sequences
                 continue
             dataset.append(seq)
             yield seq, dataset
 
 @pytest.mark.parametrize("seq,dataset", get_data())
-def test_preprocess(seq, dataset, setup):
+def test_preprocess(seq, dataset, setup, window_size=7):
     dataset = np.array(dataset, dtype=object)
     dataset = setup.encode_dataset(dataset)
     assert setup.get_dictionaries()[1]['[PAD]'] == 0
-    list_of_chunks = setup.chunks_seq(seq, window_size=WINDOW_SIZE)
-    if len(seq) > WINDOW_SIZE:
-        assert np.shape(list_of_chunks) == (len(seq)-WINDOW_SIZE+1, WINDOW_SIZE)
+    list_of_chunks = setup.chunks_seq(seq, window_size=window_size)
+    if len(seq) > window_size:
+        assert np.shape(list_of_chunks) == (len(seq)-window_size+1, window_size)
     else:
         assert np.shape(list_of_chunks) == (1, len(seq))
     train_idx, val_idx, test_idx = \
@@ -43,11 +40,11 @@ def test_preprocess(seq, dataset, setup):
     val_dataset = dataset[val_idx]
     assert len(train_dataset) == int(len(dataset)*0.7)
     assert len(train_dataset) + len(val_dataset) == int(len(dataset)*0.85)
-    train_chunks = setup.chunks(train_dataset, window_size=WINDOW_SIZE)
+    train_chunks = setup.chunks(train_dataset, window_size=window_size)
     X_train, y_train = setup.transform(
         train_chunks,
-        add_padding=WINDOW_SIZE
+        add_padding=window_size
     )
-    assert np.shape(X_train) == (len(train_chunks), WINDOW_SIZE,
+    assert np.shape(X_train) == (len(train_chunks), window_size,
                                  setup.get_num_tokens())
     assert np.shape(y_train) == (len(train_chunks), setup.get_num_tokens())
