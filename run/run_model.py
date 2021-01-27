@@ -112,7 +112,7 @@ if __name__ == '__main__':
         logger.info('- Num. normal: {}'.format(scores['n_correct']))
         logger.info('- Accuracy: {:.4f}'.format(scores['accuracy']))
     # Save config values in a json file:
-    with open(args.output_path + '/config.json', 'w') as f:
+    with open(os.path.join(args.output_path, 'config.json'), 'w') as f:
         par = dict(window_size=args.window_size, min_length=args.min_length)
         json.dump(par, f)
-        f.close()
+

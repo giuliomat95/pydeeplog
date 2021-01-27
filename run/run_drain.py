@@ -37,7 +37,6 @@ def run_drain(logger, input_file, output_path):
             if line_count % 1000 == 0:
                 logger.info('Processed {} log lines.'.format(line_count))
         logger.info(f'Finished Drain3 process. Total of lines: {line_count}')
-        f.close()
     # Import the results in json format
     result = {'data': []}
     for sess_id in sessions:
@@ -46,16 +45,13 @@ def run_drain(logger, input_file, output_path):
                                    is_normal=anomaly_flag[sess_id],
                                    session_id=sess_id))
 
-    with open(output_path + '/data.json', 'w') as f:
+    with open(os.path.join(output_path, 'data.json'), 'w') as f:
         json.dump(result, f)
-        f.close()
-    with open(output_path + '/templates.json', 'w') as g:
+    with open(os.path.join(output_path, 'templates.json'), 'w') as g:
         json.dump(templates, g)
-        g.close()
     # Save the Drain tree object in a pickle file
-    with open(output_path + '/drain_tree.pickle', 'wb') as h:
+    with open(os.path.join(output_path, 'drain_tree.pickle'), 'wb') as h:
         pickle.dump(template_miner.drain.root_node, h)
-        h.close()
 
 
 if __name__ == '__main__':
