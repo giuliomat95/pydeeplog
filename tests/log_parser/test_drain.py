@@ -3,6 +3,7 @@ from deeplog_trainer.log_parser.drain import Drain
 import pytest
 import re
 
+
 @pytest.fixture(scope='session')
 def drain():
     template_miner = TemplateMiner()
@@ -18,6 +19,6 @@ def test_get_parameters(logs, drain):
     result = drain.add_message(logs)
     template = result['template']
     params = result['params']
-    # The number of tokens masked with an asterisk in the template message must be equal to the length of the list that
-    # gather them.
+    # The number of tokens masked with an asterisk in the template message must
+    # be equal to the length of the list that gather them.
     assert len(re.findall(r'<[^<>]+>', template)) == len(params)
