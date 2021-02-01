@@ -36,12 +36,12 @@ class Network:
 
 
 class Node:
-    def __init__(self, network: Network, value, is_start=False,
-                 is_end=False, parent_idx=None, idx=None):
+    def __init__(self, network: Network, value: int = None, is_start=False,
+                 is_end=False, parent_idx: int = None, idx: int = None):
         """
         Attributes:
         :param network: Object of type Network Class
-        :param value: the value of the node. 
+        :param value: the value of the node.
         :param is_start: boolean variable to set if the Node starts the workflow
         :param is_end: boolean variable to set if the Node ends the workflow
         :param parent_idx: index nodes of the parents
@@ -112,6 +112,9 @@ class Node:
         return children_idx
 
     def add_child(self, child_idx):
+        if child_idx not in self._network.get_nodes():
+            raise Exception('No node was found in the network with the'
+                            'following index {}'.format(child_idx))
         child = self._network.get_node(child_idx)
         if child.get_value() in self._children:
             old_idx = self._children[child.get_value()]
