@@ -4,9 +4,6 @@ class Network:
         self._nodes = {0: self._root_node}
         self._last_idx = 0
 
-    def get_new_idx(self):
-        return self._last_idx + 1
-
     def get_root_node(self):
         return self._root_node
 
@@ -24,12 +21,11 @@ class Network:
         Given in input the properties of a Node, it adds it to the collection of
         nodes and returns the newer index
         """
-        idx = self.get_new_idx()
-        node = Node(self, value, is_start=is_start, is_end=is_end,
-                    parent_idx=parent_idx, idx=idx)
-        self._nodes[idx] = node
         self._last_idx += 1
-        return idx
+        node = Node(self, value, is_start=is_start, is_end=is_end,
+                    parent_idx=parent_idx, idx=self._last_idx)
+        self._nodes[self._last_idx] = node
+        return self._last_idx
 
     def replace_node(self, replace_idx, by_idx):
         self._nodes[replace_idx] = self._nodes[by_idx]
@@ -83,15 +79,9 @@ class Node:
     def get_parents(self):
         return self._parents
 
-    def set_parents(self, parents):
-        self._parents = parents
-
     def get_children(self, only_node_idx=False):
         return list(
             self._children.values()) if only_node_idx else self._children
-
-    def set_children(self, children_idx):
-        self._children_idx = children_idx
 
     def add_parents(self, parents_idx):
         for idx in parents_idx:

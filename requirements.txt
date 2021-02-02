@@ -12,6 +12,7 @@ Keras-Preprocessing==1.1.2
 numpy==1.19.4
 patch==1.16
 pickleshare==0.7.5
+pytest-mock==3.5.1
 tensorboard==2.4.0
 tensorboard-plugin-profile==2.4.0
 tensorboard-plugin-wit==1.7.0
