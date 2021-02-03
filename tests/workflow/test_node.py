@@ -2,7 +2,7 @@ import pytest
 from deeplog_trainer.workflow.build_workflow import Node, RootNode
 
 
-def get_data():
+def get_data1():
     nodes_data = [dict(value=3, is_start=True, is_end=False, idx=1,
                        parent_idx=0),
                   dict(value=5, is_start=False, is_end=False, idx=2,
@@ -11,14 +11,10 @@ def get_data():
                        parent_idx=1),
                   dict(value=4, is_start=False, is_end=True, idx=4,
                        parent_idx=1)]
-    yield nodes_data
-
-def get_data_1by1(nodes_data):
-    for node_data in next(nodes_data):
+    for node_data in nodes_data:
         yield node_data
 
-
-@pytest.mark.parametrize("node_data", get_data_1by1(get_data()))
+@pytest.mark.parametrize("node_data", get_data1())
 def test_node_get_methods(mocker, node_data):
     # Mock network class
     mocked_network = \
@@ -62,35 +58,41 @@ def test_node_set_methods(mocker, value, is_start, is_end, idx, parents_idx):
     assert node.get_parents() == parents_idx
 
 
-@pytest.mark.parametrize("nodes_data", get_data())
-def test_node_add_children(mocker, nodes_data):
+def get_data2():
+    nodes = [(dict(value=3, idx=1, parent_idx=0),
+             dict(value=5, idx=2, parent_idx=2),
+             dict(value=5, idx=3, parent_idx=1),
+             dict(value=4, is_end=True, idx=4, parent_idx=1))]
+    return nodes
+
+@pytest.mark.parametrize("data_node1, data_node2, data_node3, data_node4",
+                         get_data2())
+def test_node_add_children(mocker, data_node1, data_node2, data_node3,
+                           data_node4):
     mocked_network = \
         mocker.patch('deeplog_trainer.workflow.build_workflow.Network',
                      autospec=True)
     # Call the mocked class
     instance = mocked_network.return_value
     # Initialise the first node
-    node1 = Node(instance, **nodes_data[0])
+    node1 = Node(instance, **data_node1)
     # Mock the method get_nodes returning the dictionary with the nodes in input
     nodes = {}
-    for node in nodes_data:
-        nodes[node['idx']] = Node(instance, **node)
+    for data_node in [data_node1, data_node2, data_node3, data_node4]:
+        nodes[data_node['idx']] = Node(instance, **data_node)
     instance.get_nodes.return_value = nodes
     # Raise an error if you try to add a child with an unknown index Node
     with pytest.raises(Exception):
-        indexes = []
-        for node in nodes_data:
-            indexes.append(node['idx'])
+        indexes = list(nodes.keys())
         node1.add_child(child_idx=max(indexes)+1)
     # Mock method get_node returning the node with the corresponding index
     my_side_effect = lambda index: nodes[index]
-    with mocker.patch.object(instance, 'get_node', side_effect=my_side_effect):
-        # Add the 2nd and 3rd node to the children of the 1st node
-        node1.add_children([nodes_data[1]['idx'], nodes_data[2]['idx']])
-        # Since the 2 nodes have the same value the method add_child must
-        # combine node3 and node2 and add only the node with the first child
-        # index
-        assert node1.get_children() == \
-               {nodes_data[1]['value']: nodes_data[1]['idx']}
+    mocker.patch.object(instance, 'get_node', side_effect=my_side_effect)
+    # Add the 2nd and 3rd node to the children of the 1st node
+    node1.add_children([data_node2['idx'], data_node3['idx']])
+    # Since the 2 nodes have the same value the method add_child must
+    # combine node3 and node2 and add only the node with the first child
+    # index
+    assert node1.get_children() == {data_node2['value']: data_node2['idx']}
     with pytest.raises(Exception):
-        node1.combine(Node(instance, **nodes_data[3]))
+        node1.combine(Node(instance, **data_node4))
