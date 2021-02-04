@@ -30,7 +30,6 @@ def test_node_get_methods(mocker, node_data):
     assert node.is_end() == node_data['is_end']
     assert node.get_parents() == [node_data['parent_idx']]
 
-
 @pytest.mark.parametrize(
     "value, is_start, is_end, idx, parents_idx",
     [(2, True, False, 2, [0, 1]), (5, False, True, 3, [1, 2]),
@@ -56,7 +55,6 @@ def test_node_set_methods(mocker, value, is_start, is_end, idx, parents_idx):
                                            {parents_idx[1]: sample_node}]
     node.add_parents(parents_idx)
     assert node.get_parents() == parents_idx
-
 
 def get_data2():
     nodes = [(dict(value=3, idx=1, parent_idx=0),
@@ -94,5 +92,6 @@ def test_node_add_children(mocker, data_node1, data_node2, data_node3,
     # combine node3 and node2 and add only the node with the first child
     # index
     assert node1.get_children() == {data_node2['value']: data_node2['idx']}
+    # Raise an error if trying to combine two nodes with different values
     with pytest.raises(Exception):
         node1.combine(Node(instance, **data_node4))

@@ -138,6 +138,3 @@ class RootNode(Node):
     def __init__(self, network, idx=None):
         super().__init__(network, value=None, is_start=False, is_end=False,
                          parent_idx=None, idx=idx)
-
-
-
