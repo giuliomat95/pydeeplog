@@ -20,7 +20,7 @@ def run_drain(logger, input_file, output_path):
         template_miner = TemplateMiner()
         drain = Drain(template_miner)
         session_storage = SessionStorage()
-        logger.info(f"Drain3 started reading from {args.input}")
+        logger.info(f"Drain3 started reading from {args.input_file}")
         line_count = 0
         for line in f:
             sess_id, anomaly_flag = adapter.get_session_id(log_msg=line)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         help="Put the name of the directory where the results "
                              "will be saved")
     args = parser.parse_args()
-    if not os.path.exists(args.output):
-        os.mkdir(args.output)
+    if not os.path.exists(args.output_path):
+        os.mkdir(args.output_path)
 
     run_drain(logging.getLogger(__name__), args.input_file, args.output_path)

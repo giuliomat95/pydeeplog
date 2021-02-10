@@ -1,140 +1,329 @@
-class Network:
-    def __init__(self):
-        self._root_node = RootNode(self, idx=0)
-        self._nodes = {0: self._root_node}
-        self._last_idx = 0
+from deeplog_trainer.workflow.build_network import Network, RootNode
+import copy
+import numpy as np
+from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 
-    def get_root_node(self):
-        return self._root_node
-
-    def get_nodes(self):
-        return self._nodes
-
-    def get_node(self, idx):
-        return self._nodes[idx]
-
-    def get_last_index(self):
-        return self._last_idx
-
-    def add_node(self, value, is_start=False, is_end=False, parent_idx=None):
+class WorkflowBuilder:
+    def __init__(self, logger):
         """
-        Given in input the properties of a Node, it adds it to the collection of
-        nodes and returns the newer index
+        Attributes
+        :param logger: logger function from logging module
         """
-        self._last_idx += 1
-        node = Node(self, value, is_start=is_start, is_end=is_end,
-                    parent_idx=parent_idx, idx=self._last_idx)
-        self._nodes[self._last_idx] = node
-        return self._last_idx
+        self.logger = logger
 
-    def replace_node(self, replace_idx, by_idx):
-        self._nodes[replace_idx] = self._nodes[by_idx]
-
-
-class Node:
-    def __init__(self, network: Network, value: int = None, is_start=False,
-                 is_end=False, parent_idx: int = None, idx: int = None):
+    def build_workflows(self, dataset, initial_workflows=None, threshold=0.8,
+                        back_steps=1, verbose=0, verbose_prefix=''):
         """
-        Attributes:
-        :param network: Object of type Network Class
-        :param value: the value of the node.
-        :param is_start: boolean variable to set if the Node starts the workflow
-        :param is_end: boolean variable to set if the Node ends the workflow
-        :param parent_idx: index nodes of the parents
-        :param idx: index of the Node
+        Builds workflows given a dataset of sequences. Also, it is possible to
+        provide a set of workflows (initial_workflows) to update them.
         """
-        self._network = network
-        self._idx = idx
-        self._value = value
-        self._is_start = is_start
-        self._is_end = is_end
-        self._parents = [] if parent_idx is None else [parent_idx]
-        # Dictionary of children nodes
-        self._children = {}
-
-    def get_network(self):
-        return self._network
-
-    def get_idx(self):
-        return self._idx
-
-    def set_idx(self, idx):
-        self._idx = idx
-
-    def get_value(self):
-        return self._value
-
-    def is_start(self):
-        return self._is_start
-
-    def set_start(self, is_start):
-        self._is_start = is_start
-
-    def is_end(self):
-        return self._is_end
-
-    def set_end(self, is_end):
-        self._is_end = is_end
-
-    def get_parents(self):
-        return self._parents
-
-    def get_children(self, only_node_idx=False):
-        return list(
-            self._children.values()) if only_node_idx else self._children
-
-    def add_parents(self, parents_idx):
-        for idx in parents_idx:
-            self.add_parent(idx)
-        return parents_idx
-
-    def add_parent(self, parent_idx):
-        exists = [x for x in self._parents if
-                  self._network.get_node(x) is self._network.get_node(
-                      parent_idx)]
-        if len(exists) == 0:
-            self._parents.append(parent_idx)
-            return parent_idx
-
-    def add_children(self, children_idx):
-        for idx in children_idx:
-            self.add_child(idx)
-        return children_idx
-
-    def add_child(self, child_idx):
-        if child_idx not in self._network.get_nodes():
-            raise Exception('No node was found in the network with the'
-                            'following index {}'.format(child_idx))
-        child = self._network.get_node(child_idx)
-        if child.get_value() in self._children:
-            old_idx = self._children[child.get_value()]
-            old_child = self._network.get_node(old_idx)
-            # Combine if they are different nodes
-            if old_child.get_idx() != child.get_idx():
-                self._network.replace_node(child_idx, old_idx)
-                old_child.combine(child)
-            return old_idx
+        if initial_workflows is None:
+            workflows = {
+                'network': Network(),
+                'data': []
+            }
         else:
-            self._children[child.get_value()] = child_idx
-            return child_idx
+            workflows = copy.deepcopy(initial_workflows)
 
-    def combine(self, node):
+        wf_sequences = dataset + [seq for seq in workflows['data']]
+        wf_sequences = np.unique(np.array(dataset, dtype=object))
+        similar_seqs = self._get_similar_sequences(wf_sequences,
+                                                   threshold=threshold,
+                                                   verbose=verbose,
+                                                   verbose_prefix=
+                                                   verbose_prefix)
+        _ = self._build_all_paths(workflows['network'], similar_seqs,
+                                  back_steps=back_steps, verbose=verbose,
+                                  verbose_prefix=verbose_prefix)
+
+        workflows['data'] = wf_sequences
+
+        return workflows
+
+    def _get_similar_sequences(self, dataset, threshold, verbose,
+                               verbose_prefix=''):
         """
-        :param node: object of type Node
+        Find similar sequences using BLEU score.
         """
-        if node.get_value() != self._value:
-            raise Exception('Nodes cannot be combined: values are different!')
-        elif node.get_idx() == self._idx:
-            # Skip combinations of the same node
-            return
-        # self._network.replace_node(node.get_idx(), self._idx)
-        self._is_start = self._is_start or node.is_start()
-        self._is_end = self._is_end or node.is_end()
-        self.add_parents(node.get_parents())
-        self.add_children(node.get_children(only_node_idx=True))
 
+        if verbose > 0:
+            self.logger.info('%sSearching similar sequences...'
+                             % verbose_prefix, end='\r')
+        # Long sequences first
+        n_items = len(dataset)
+        dataset = sorted(dataset, key=len, reverse=True)
+        max_length = max([len(s) for s in dataset])
+        original_dataset = dataset  # Copy original dataset
+        # Create numpy matrix with all sequences and a vector with sequences
+        # length to compute the similarity scores
+        lengths = np.zeros(n_items, dtype='int32')
+        dataset = np.random.rand(n_items, max_length)  # Square matrix
+        # Store lengths of each sequence in the original matrix
+        for i in range(n_items):
+            lengths[i] = len(original_dataset[i])
+            dataset[i, :len(original_dataset[i])] = original_dataset[i]
 
-class RootNode(Node):
-    def __init__(self, network, idx=None):
-        super().__init__(network, value=None, is_start=False, is_end=False,
-                         parent_idx=None, idx=idx)
+        # Copy matrix to shift rows later
+        cp_dataset = copy.deepcopy(dataset)
+
+        # List to store similar sequences
+        similar_seqs = []
+        for i in range(n_items):
+            similar_seqs.append(
+                [original_dataset[i]])  # Copy sequences from original dataset
+            # This copy in a list a list of list of sequences. weird
+        for offset in range(1, n_items):
+            if verbose > 0:
+                self.logger.info('%sSearching similar sequences: %d / %d...'
+                                 % (verbose_prefix, offset, n_items - 1),
+                                 end='\r')
+
+            # To compute the exact BLEU score, we have to use the maximum
+            # between the length of s1 and the length of all sequences. However,
+            # to speed up, we will simply use max_length
+            # copy_lengths = lengths.copy()
+            # copy_lengths[lengths < len(s1)] = len(s1)
+
+            # Shift rows one position
+            cp_dataset = np.roll(cp_dataset, -1, axis=0)
+            dataset = dataset
+            cp_dataset = cp_dataset
+
+            # Compute BLEU scores
+            scores = np.sum(dataset == cp_dataset, axis=-1) / max_length
+
+            # Store matches
+            matches = np.argwhere(scores >= threshold).reshape(-1)
+            for match in matches:
+                similar_seqs[match].append(
+                    original_dataset[(match + offset) % n_items])
+        return similar_seqs
+
+    def _find_path(self, network, node_idx, seq, found_workflow=[]):
+        """
+        Finds a path of nodes for a given sequence, recursively. Returns an
+        empty list if the path does not exists.
+        """
+        if len(seq) == 0:
+            return found_workflow
+        node = network.get_node(node_idx)
+        for _, child_idx in node.get_children().items():
+            child_node = network.get_node(child_idx)
+            if child_node.get_value() == seq[0]:
+                iter_found_workflow = self._find_path(network, child_idx,
+                                                      seq[1:],
+                                                      found_workflow=
+                                                      (found_workflow +
+                                                       [child_node.get_idx()]))
+                if len(iter_found_workflow) > 0:
+                    return iter_found_workflow
+        return []
+
+    def _build_all_paths(self, network, similar_seqs, back_steps, verbose,
+                         verbose_prefix=''):
+        # Build paths between nodes
+        if verbose > 0:
+            self.logger.info('%sBuilding workflows...' % verbose_prefix,
+                             end='\r')
+
+        root_node = network.get_root_node()
+        root_idx = root_node.get_idx()
+
+        added_workflows = []
+        for i, seqs in enumerate(similar_seqs):
+            if verbose > 0:
+                self.logger.info('%sBuilding workflows: %d / %d...'
+                                 % (verbose_prefix, i + 1, len(similar_seqs)),
+                                 ' ' * 10, end='\r')
+
+            ref_seq = []
+            ref_workflows = []
+            explored_edges = {}
+
+            # In the group of similar sequences, check if any of them already
+            # exists as workflow. If it exists, we will use it as a reference,
+            # so we append nodes to the existing path instead of creating a new
+            # independent one.
+            seqs_to_ignore = []
+            n_found = 0
+            for k, seq in enumerate(seqs):
+                found_workflow = self._find_path(network, root_idx, seq)
+                if len(found_workflow) > 0:
+                    n_found += 1
+                    seqs_to_ignore.append(k)
+                    if k == 0:
+                        # If first sequence is found, skip group of sequences
+                        break
+
+                    ref_seq = seq
+                    found_workflow = [found_workflow]
+                    new_ref_workflows = list(
+                        map(list, zip(*found_workflow)))  # Transpose
+                    ref_workflows = self._combine_ref_workflows(
+                        ref_workflows, new_ref_workflows)
+
+            if 0 not in seqs_to_ignore:
+                # Add the first sequence of the group similar_seqs
+                # (if it does not exist yet)
+                seqs_to_ignore.append(0)
+                iter_added_workflows = self._build_path(
+                    network, root_idx, seqs[0], True, back_steps=back_steps,
+                    ref_seq=ref_seq, ref_workflows=ref_workflows,
+                    explored_edges=explored_edges)
+
+                added_workflows += iter_added_workflows
+                new_ref_workflows = list(map(list, zip(*iter_added_workflows)))
+                ref_workflows = self._combine_ref_workflows(ref_workflows,
+                                                            new_ref_workflows)
+            else:
+                # If the first sequence (which should be used as reference)
+                # already exists, skip
+                continue
+
+            ref_seq = seqs[0]
+            # Then, add the rest of the sequences in the group similar_seqs
+            # using the first added sequence as a reference
+            for k, seq in enumerate(seqs[1:]):
+                if verbose > 0:
+                    self.logger.info('%sBuilding workflows: %d / %d (%d / %d)'
+                                     '...' % (verbose_prefix, i + 1,
+                                              len(similar_seqs), k + 2,
+                                              len(seqs)), ' ' * 10, end='\r')
+
+                if k in seqs_to_ignore:
+                    continue
+
+                iter_added_workflows = self._build_path(
+                    network, root_idx, seq, True, back_steps=back_steps,
+                    ref_seq=ref_seq, ref_workflows=ref_workflows,
+                    explored_edges=explored_edges)
+                added_workflows += iter_added_workflows
+                new_ref_workflows = list(
+                    map(list, zip(*iter_added_workflows)))
+                ref_workflows = self._combine_ref_workflows(ref_workflows,
+                                                            new_ref_workflows)
+        return added_workflows
+
+    def _build_path(self, network, parent_idx, seq, is_start, back_steps,
+                    ref_seq=[], ref_workflows=[], workflow_path=[],
+                    explored_edges={}):
+        """
+        Recursive method to build workflow path.
+        Initial call: _build_path(parent: root node, seq: array with token IDs,
+        is_start: True)
+        """
+        parent = network.get_node(parent_idx)
+
+        if len(seq) == 0:
+            parent.set_end(True)
+            return [workflow_path]
+
+        current_value = seq[0]
+        added_workflows = []
+
+        if len(ref_seq) > 0 and ref_seq[0] == current_value:
+            # Since current value is the same as the reference sequence,
+            # next node is based on such reference
+            for next_idx in ref_workflows[0]:
+                next_node = network.get_node(next_idx)
+                if next_node.get_value() == current_value and not \
+                    self._is_edge_explored(network, explored_edges, parent_idx,
+                                           next_idx, seq[1:]):
+                    self._add_explored_edge(network, explored_edges, parent_idx,
+                                            next_idx, seq[1:])
+                    added_workflows += self._build_path(
+                        network, next_idx, seq[1:], False,
+                        back_steps=back_steps, ref_seq=ref_seq[1:],
+                        ref_workflows=ref_workflows[1:],
+                        workflow_path=(workflow_path + [next_idx]),
+                        explored_edges=explored_edges)
+        else:
+            # Search a similar node (i.e. same value) in the path and add it as
+            # a child (i.e. a loop) or, if not exists, create a new node.
+            # Additional constraints:
+            # - The previous node cannot be the root node.
+            # - the previous node cannot be a starting node.
+            found_next = False
+
+            for i in range(len(workflow_path)):
+                if i > back_steps:
+                    # Limit of back steps in the path
+                    break
+
+                prev_idx = workflow_path[-(i + 1)]
+                prev_node = network.get_node(prev_idx)
+
+                if isinstance(prev_node, RootNode) or prev_node.is_start():
+                    continue
+                elif prev_node.get_value() == current_value:
+                    found_next = True
+                    next_idx = prev_idx
+
+                    if self._is_edge_explored(network, explored_edges,
+                                              parent_idx, next_idx, seq[1:]):
+                        continue
+
+                    next_idx = parent.add_child(next_idx)
+                    self._add_explored_edge(network, explored_edges, parent_idx,
+                                            next_idx, seq[1:])
+                    added_workflows += self._build_path(
+                        network, next_idx, seq[1:], False,
+                        back_steps=back_steps, ref_seq=ref_seq[1:],
+                        ref_workflows=ref_workflows[1:],
+                        workflow_path=(workflow_path + [next_idx]),
+                        explored_edges=explored_edges)
+                    break
+
+            if not found_next:
+                # If no previous node has been found in the path, add a new one
+                next_idx = network.add_node(seq[0], is_start, False, parent_idx)
+                next_idx = parent.add_child(next_idx)
+                self._add_explored_edge(network, explored_edges, parent_idx,
+                                        next_idx, seq[1:])
+                added_workflows += self._build_path(
+                    network, next_idx, seq[1:], False, back_steps=back_steps,
+                    ref_seq=ref_seq[1:], ref_workflows=ref_workflows[1:],
+                    workflow_path=(workflow_path + [next_idx]),
+                    explored_edges=explored_edges)
+        return added_workflows
+
+    def _is_edge_explored(self, network, explored_edges, from_idx, to_idx, seq):
+        from_idx = network.get_node(from_idx).get_idx()
+        to_idx = network.get_node(to_idx).get_idx()
+        if from_idx not in explored_edges:
+            return False
+        elif to_idx not in explored_edges[from_idx]:
+            return False
+        elif seq not in explored_edges[from_idx][to_idx]:
+            return False
+        else:
+            return True
+
+    def _add_explored_edge(self, network, explored_edges, parent_idx, next_idx,
+                           seq):
+        # Fix idx
+        parent_idx = network.get_node(parent_idx).get_idx()
+        next_idx = network.get_node(next_idx).get_idx()
+        # Add edge
+        if parent_idx not in explored_edges:
+            explored_edges[parent_idx] = {}
+        if next_idx not in explored_edges[parent_idx]:
+            explored_edges[parent_idx][next_idx] = []
+        if seq not in explored_edges[parent_idx][next_idx]:
+            explored_edges[parent_idx][next_idx].append(seq)
+
+    def _combine_ref_workflows(self, a, b):
+        """
+        Combines two lists of different lengths.
+        Example: [[1,2], [3]] and [[1,4]] -> [[1,2,4], [3]]
+        """
+        if len(a) > len(b):
+            result = a
+            transfer = b
+        else:
+            result = b
+            transfer = a
+        result = [list(set(result[i] + transfer[i])) for i in
+                  range(len(transfer))] + result[len(transfer):]
+        return result
+

@@ -1,5 +1,5 @@
 import pytest
-from deeplog_trainer.workflow.build_workflow import RootNode, Network
+from deeplog_trainer.workflow.build_network import RootNode, Network
 
 
 def get_data():
@@ -17,7 +17,7 @@ def get_data():
 @pytest.mark.parametrize("nodes_data, expected_new_idx, expected_value, "
                          "expected_start, expected_end, expected_parent_idx",
                          get_data())
-def test_build_workflow(nodes_data, expected_new_idx, expected_value,
+def test_build_network(nodes_data, expected_new_idx, expected_value,
                         expected_start, expected_end, expected_parent_idx):
     network = Network()
     assert isinstance(network.get_root_node(), RootNode)
