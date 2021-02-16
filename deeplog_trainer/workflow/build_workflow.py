@@ -1,7 +1,7 @@
 from deeplog_trainer.workflow.build_network import Network, RootNode
 import copy
 import numpy as np
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
 
 class WorkflowBuilder:
     def __init__(self, logger):
@@ -26,7 +26,7 @@ class WorkflowBuilder:
             workflows = copy.deepcopy(initial_workflows)
 
         wf_sequences = dataset + [seq for seq in workflows['data']]
-        wf_sequences = np.unique(np.array(dataset, dtype=object))
+        wf_sequences = np.unique(np.array(wf_sequences, dtype=object))
         similar_seqs = self._get_similar_sequences(wf_sequences,
                                                    threshold=threshold,
                                                    verbose=verbose,
@@ -47,8 +47,8 @@ class WorkflowBuilder:
         """
 
         if verbose > 0:
-            self.logger.info('%sSearching similar sequences...'
-                             % verbose_prefix, end='\r')
+            self.logger.info('{0}Searching similar sequences...'.format(
+                verbose_prefix))
         # Long sequences first
         n_items = len(dataset)
         dataset = sorted(dataset, key=len, reverse=True)
@@ -74,9 +74,8 @@ class WorkflowBuilder:
             # This copy in a list a list of list of sequences. weird
         for offset in range(1, n_items):
             if verbose > 0:
-                self.logger.info('%sSearching similar sequences: %d / %d...'
-                                 % (verbose_prefix, offset, n_items - 1),
-                                 end='\r')
+                self.logger.info('{}Searching similar sequences: {} / {}...'
+                                 .format(verbose_prefix, offset, n_items - 1))
 
             # To compute the exact BLEU score, we have to use the maximum
             # between the length of s1 and the length of all sequences. However,
@@ -123,8 +122,7 @@ class WorkflowBuilder:
                          verbose_prefix=''):
         # Build paths between nodes
         if verbose > 0:
-            self.logger.info('%sBuilding workflows...' % verbose_prefix,
-                             end='\r')
+            self.logger.info('{}Building workflows...'.format(verbose_prefix))
 
         root_node = network.get_root_node()
         root_idx = root_node.get_idx()
@@ -132,9 +130,8 @@ class WorkflowBuilder:
         added_workflows = []
         for i, seqs in enumerate(similar_seqs):
             if verbose > 0:
-                self.logger.info('%sBuilding workflows: %d / %d...'
-                                 % (verbose_prefix, i + 1, len(similar_seqs)),
-                                 ' ' * 10, end='\r')
+                self.logger.info('{}Building workflows: {} / {}...'.format(
+                    verbose_prefix, i + 1, len(similar_seqs)))
 
             ref_seq = []
             ref_workflows = []
@@ -185,12 +182,12 @@ class WorkflowBuilder:
             # using the first added sequence as a reference
             for k, seq in enumerate(seqs[1:]):
                 if verbose > 0:
-                    self.logger.info('%sBuilding workflows: %d / %d (%d / %d)'
-                                     '...' % (verbose_prefix, i + 1,
-                                              len(similar_seqs), k + 2,
-                                              len(seqs)), ' ' * 10, end='\r')
+                    self.logger.info('{}Building workflows: {} / {} ({} / {})'
+                                     '...'.format(verbose_prefix, i + 1,
+                                                  len(similar_seqs), k + 2,
+                                                  len(seqs)))
 
-                if k in seqs_to_ignore:
+                if k+1 in seqs_to_ignore:
                     continue
 
                 iter_added_workflows = self._build_path(
@@ -225,6 +222,7 @@ class WorkflowBuilder:
             # Since current value is the same as the reference sequence,
             # next node is based on such reference
             for next_idx in ref_workflows[0]:
+                next_idx = parent.add_child(next_idx)
                 next_node = network.get_node(next_idx)
                 if next_node.get_value() == current_value and not \
                     self._is_edge_explored(network, explored_edges, parent_idx,
@@ -326,4 +324,3 @@ class WorkflowBuilder:
         result = [list(set(result[i] + transfer[i])) for i in
                   range(len(transfer))] + result[len(transfer):]
         return result
-

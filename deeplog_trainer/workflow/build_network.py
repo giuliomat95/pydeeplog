@@ -116,6 +116,7 @@ class Node:
             return old_idx
         else:
             self._children[child.get_value()] = child_idx
+            child.add_parent(self._idx)
             return child_idx
 
     def combine(self, node):
