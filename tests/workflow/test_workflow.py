@@ -1,5 +1,5 @@
 import pytest
-from deeplog_trainer.workflow.build_workflow import WorkflowBuilder
+from deeplog_trainer.workflow.workflow import WorkflowBuilder
 import logging as logger
 import numpy as np
 

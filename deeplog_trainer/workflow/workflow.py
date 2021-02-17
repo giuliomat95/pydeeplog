@@ -1,4 +1,4 @@
-from deeplog_trainer.workflow.build_network import Network, RootNode
+from deeplog_trainer.workflow.network import Network, RootNode
 import copy
 import numpy as np
 
