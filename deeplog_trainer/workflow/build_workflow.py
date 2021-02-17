@@ -26,7 +26,9 @@ class WorkflowBuilder:
             workflows = copy.deepcopy(initial_workflows)
 
         wf_sequences = dataset + [seq for seq in workflows['data']]
-        wf_sequences = np.unique(np.array(wf_sequences, dtype=object))
+        # Remove duplicate sequences
+        wf_sequences = [tuple(s) for s in wf_sequences]
+        wf_sequences = [list(s) for s in list(dict.fromkeys(wf_sequences))]
         similar_seqs = self._get_similar_sequences(wf_sequences,
                                                    threshold=threshold,
                                                    verbose=verbose,
