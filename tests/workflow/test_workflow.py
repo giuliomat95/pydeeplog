@@ -1,7 +1,7 @@
 import pytest
 from deeplog_trainer.workflow.build_workflow import WorkflowBuilder
 import logging as logger
-
+import numpy as np
 
 def get_dataset():
     test_dataset = [
@@ -29,5 +29,12 @@ def test_build_workflows(test_dataset, threshold, verbose, expected_seqs):
                                                 verbose=verbose,
                                                 back_steps=1)
     assert workflow['data'] == expected_seqs
-    assert expected_seqs[0][0] in \
-           workflow['network'].get_root_node().get_children()
+    unique_values = []
+    for node in workflow['network'].get_nodes().values():
+        if node == workflow['network'].get_root_node():
+            continue
+        unique_values.append(node.get_value())
+    unique_values = np.unique(unique_values)
+    for seq in expected_seqs:
+        for value in seq:
+            assert value in unique_values
