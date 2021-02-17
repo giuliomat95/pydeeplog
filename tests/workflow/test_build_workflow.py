@@ -1,7 +1,5 @@
 import pytest
 from deeplog_trainer.workflow.build_workflow import WorkflowBuilder
-from deeplog_trainer.workflow.build_network import Node, Network
-import pdb
 import logging as logger
 
 
@@ -22,7 +20,6 @@ def get_dataset():
         [1, 2, 3, 4, 5, 3, 5, 20, 19, 1, 21, 15, 2]]
     return test_dataset, expected_seqs
 
-
 @pytest.mark.parametrize("test_dataset, threshold, verbose, expected_seqs",
                          [(get_dataset()[0], 0.2, 1, get_dataset()[1])])
 def test_build_workflows(test_dataset, threshold, verbose, expected_seqs):
@@ -35,4 +32,3 @@ def test_build_workflows(test_dataset, threshold, verbose, expected_seqs):
     assert workflow['data'] == expected_seqs
     assert expected_seqs[0][0] in \
            workflow['network'].get_root_node().get_children()
-
