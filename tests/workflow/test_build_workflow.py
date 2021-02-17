@@ -28,7 +28,6 @@ def test_build_workflows(test_dataset, threshold, verbose, expected_seqs):
                                                 threshold=threshold,
                                                 verbose=verbose,
                                                 back_steps=1)
-
     assert workflow['data'] == expected_seqs
     assert expected_seqs[0][0] in \
            workflow['network'].get_root_node().get_children()
