@@ -8,8 +8,8 @@ class DataPreprocess:
     Description:
     + Encodes log keys with additional values for padding, unknown keys and
     ending key
-    + Randomly splits the dataset as usually: train (70%), validation (15$)
-    and test (15$)
+    + Randomly splits the dataset as usually: train (70%), validation (15%)
+    and test (15%)
     + Splits into chunks of size `WINDOW_SIZE`. Note that, the longer the
     window size is, the more accurate the model is. However, workflows are
     less accurate.

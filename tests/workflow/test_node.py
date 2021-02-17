@@ -1,5 +1,5 @@
 import pytest
-from deeplog_trainer.workflow.build_workflow import Node, RootNode
+from deeplog_trainer.workflow.network import Node, RootNode
 
 
 def get_data1():

@@ -63,7 +63,6 @@ if __name__ == '__main__':
                 # Skip short sequences
                 continue
             dataset.append(seq)
-
     dataset = np.array(dataset, dtype=object)
     # List of unique keys in the training file
     vocab = list(set([x for seq in dataset for x in seq]))

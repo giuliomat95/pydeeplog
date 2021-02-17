@@ -24,10 +24,14 @@ class Network:
         self._last_idx += 1
         node = Node(self, value, is_start=is_start, is_end=is_end,
                     parent_idx=parent_idx, idx=self._last_idx)
+        for old_node in self._nodes.values():
+            if node == old_node:
+                self._last_idx -= 1
+                return old_node.get_idx()
         self._nodes[self._last_idx] = node
         return self._last_idx
 
-    def replace_node(self, replace_idx, by_idx):
+    def replace_node_reference(self, replace_idx, by_idx):
         self._nodes[replace_idx] = self._nodes[by_idx]
 
 
@@ -51,6 +55,14 @@ class Node:
         self._parents = [] if parent_idx is None else [parent_idx]
         # Dictionary of children nodes
         self._children = {}
+
+    def __eq__(self, other):
+        if isinstance(other, Node):
+            return self._value == other._value \
+                   and self._is_start == other._is_start \
+                   and self._is_end == other._is_end \
+                   and self._parents == other._parents
+        return False
 
     def get_network(self):
         return self._network
@@ -111,11 +123,12 @@ class Node:
             old_child = self._network.get_node(old_idx)
             # Combine if they are different nodes
             if old_child.get_idx() != child.get_idx():
-                self._network.replace_node(child_idx, old_idx)
+                self._network.replace_node_reference(child_idx, old_idx)
                 old_child.combine(child)
             return old_idx
         else:
             self._children[child.get_value()] = child_idx
+            child.add_parent(self._idx)
             return child_idx
 
     def combine(self, node):
