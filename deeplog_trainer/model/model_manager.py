@@ -14,10 +14,17 @@ class ModelManager:
         :param lstm_units: Number of LSTM units in each layer of the network
         """
         self.input_size = input_size
-        self.num_tokens = num_tokens
         self.lstm_units = lstm_units
+        self.num_tokens = num_tokens
+    # This is the factory method
+    @staticmethod
+    def build(self, model_type: str):
+        if model_type == 'log_keys':
+            return self.log_keys_model()
+        elif model_type == 'log_params':
+            return self.log_params_model()
 
-    def build(self):
+    def log_keys_model(self):
         # Consider using an embedding if there are too many different input
         # classes
         x = Input(shape=(self.input_size, self.num_tokens))
@@ -39,6 +46,26 @@ class ModelManager:
             # accuracy
             optimizer=tf.keras.optimizers.Adam(1e-3),
             metrics=['accuracy']
+        )
+        return model
+
+    def log_params_model(self):
+        x = Input(shape=(self.input_size, self.num_tokens))
+        x_input = x
+        x = LSTM(self.lstm_units, return_sequences=True)(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tfa.layers.WeightNormalization(Dense(256, activation='relu'))(x)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tfa.layers.WeightNormalization(Dense(128, activation='relu'))(x)
+        x = Dense(self.num_tokens, activation='linear')(x)
+        model = Model(inputs=x_input, outputs=x)
+
+        model.compile(
+            loss=tf.keras.losses.MeanSquaredError(),
+            # Adam algorithm set as optimizer gave the best results in terms of
+            # accuracy
+            optimizer=tf.keras.optimizers.Adam(1e-3),
+            metrics=['mse']
         )
         return model
 
