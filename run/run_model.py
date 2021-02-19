@@ -79,10 +79,9 @@ if __name__ == '__main__':
         'Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx),
                                             len(test_idx)))
     model_manager = ModelManager(input_size=args.window_size,
-                                 num_tokens=num_tokens,
                                  lstm_units=args.LSTM_units)
 
-    model = model_manager.build('log_keys')
+    model = model_manager.build('log_keys', num_tokens)
     model.summary()
     X_train, y_train = data_preprocess.transform(
         data_preprocess.chunks(train_dataset, window_size=args.window_size),

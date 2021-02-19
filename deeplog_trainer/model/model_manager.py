@@ -6,7 +6,10 @@ import os
 
 
 class ModelManager:
-    def __init__(self, input_size, num_tokens, lstm_units):
+    MODEL_TYPE_LOG_KEYS = 'log_keys'
+    MODEL_TYPE_LOG_PARAMS = 'log_params'
+
+    def __init__(self, input_size, lstm_units):
         """
         Attributes:
         :param input_size: Length of network input object
@@ -15,19 +18,23 @@ class ModelManager:
         """
         self.input_size = input_size
         self.lstm_units = lstm_units
-        self.num_tokens = num_tokens
-    # This is the factory method
-    @staticmethod
-    def build(self, model_type: str):
-        if model_type == 'log_keys':
-            return self.log_keys_model()
-        elif model_type == 'log_params':
-            return self.log_params_model()
 
-    def log_keys_model(self):
+    # This is the factory method
+    def build(self, model_type: str, *args):
+        if model_type not in ['log_keys', 'log_params']:
+            raise Exception('Model type unknown')
+        try:
+            if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
+                return self._build_log_keys_model(args[0])
+            elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
+                return self._build_log_params_model(args[0])
+        except:
+            raise Exception('Provide right parameters')
+
+    def _build_log_keys_model(self, num_tokens):
         # Consider using an embedding if there are too many different input
         # classes
-        x = Input(shape=(self.input_size, self.num_tokens))
+        x = Input(shape=(self.input_size, num_tokens))
         x_input = x
 
         x = LSTM(self.lstm_units, return_sequences=True)(x)
@@ -36,7 +43,7 @@ class ModelManager:
         x = tfa.layers.WeightNormalization(Dense(256, activation='relu'))(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tfa.layers.WeightNormalization(Dense(128, activation='relu'))(x)
-        x = Dense(self.num_tokens, activation='softmax')(x)
+        x = Dense(num_tokens, activation='softmax')(x)
 
         model = Model(inputs=x_input, outputs=x)
 
@@ -49,15 +56,15 @@ class ModelManager:
         )
         return model
 
-    def log_params_model(self):
-        x = Input(shape=(self.input_size, self.num_tokens))
+    def _build_log_params_model(self, num_params):
+        x = Input(shape=(self.input_size, num_params))
         x_input = x
         x = LSTM(self.lstm_units, return_sequences=True)(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tfa.layers.WeightNormalization(Dense(256, activation='relu'))(x)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tfa.layers.WeightNormalization(Dense(128, activation='relu'))(x)
-        x = Dense(self.num_tokens, activation='linear')(x)
+        x = Dense(num_params, activation='linear')(x)
         model = Model(inputs=x_input, outputs=x)
 
         model.compile(
