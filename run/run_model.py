@@ -81,7 +81,8 @@ if __name__ == '__main__':
     model_manager = ModelManager(input_size=args.window_size,
                                  lstm_units=args.LSTM_units)
 
-    model = model_manager.build('log_keys', num_tokens)
+    model = model_manager.build(ModelManager.MODEL_TYPE_LOG_KEYS,
+                                num_tokens=num_tokens)
     model.summary()
     X_train, y_train = data_preprocess.transform(
         data_preprocess.chunks(train_dataset, window_size=args.window_size),

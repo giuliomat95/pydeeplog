@@ -1,7 +1,7 @@
 import tensorflow as tf
-import tensorflow_addons as tfa
+from tensorflow_addons.layers import WeightNormalization
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, LSTM, Dense
+from tensorflow.keras.layers import Input, LSTM, Dense, BatchNormalization
 import os
 
 
@@ -20,16 +20,17 @@ class ModelManager:
         self.lstm_units = lstm_units
 
     # This is the factory method
-    def build(self, model_type: str, *args):
+    def build(self, model_type: str, **kwargs):
         if model_type not in ['log_keys', 'log_params']:
             raise Exception('Model type unknown')
-        try:
-            if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
-                return self._build_log_keys_model(args[0])
-            elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
-                return self._build_log_params_model(args[0])
-        except:
+        elif 'num_tokens' not in kwargs and 'num_params' not in kwargs:
             raise Exception('Provide right parameters')
+        else:
+            for par in kwargs.values():
+                if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
+                    return self._build_log_keys_model(par)
+                elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
+                    return self._build_log_params_model(par)
 
     def _build_log_keys_model(self, num_tokens):
         # Consider using an embedding if there are too many different input
@@ -39,10 +40,10 @@ class ModelManager:
 
         x = LSTM(self.lstm_units, return_sequences=True)(x)
         x = LSTM(self.lstm_units, return_sequences=False)(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tfa.layers.WeightNormalization(Dense(256, activation='relu'))(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tfa.layers.WeightNormalization(Dense(128, activation='relu'))(x)
+        x = BatchNormalization()(x)
+        x = WeightNormalization(Dense(256, activation='relu'))(x)
+        x = BatchNormalization()(x)
+        x = WeightNormalization(Dense(128, activation='relu'))(x)
         x = Dense(num_tokens, activation='softmax')(x)
 
         model = Model(inputs=x_input, outputs=x)
@@ -59,18 +60,17 @@ class ModelManager:
     def _build_log_params_model(self, num_params):
         x = Input(shape=(self.input_size, num_params))
         x_input = x
-        x = LSTM(self.lstm_units, return_sequences=True)(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tfa.layers.WeightNormalization(Dense(256, activation='relu'))(x)
-        x = tf.keras.layers.BatchNormalization()(x)
-        x = tfa.layers.WeightNormalization(Dense(128, activation='relu'))(x)
+
+        x = LSTM(self.lstm_units, return_sequences=False)(x)
+        x = BatchNormalization()(x)
+        x = WeightNormalization(Dense(256, activation='relu'))(x)
+        x = BatchNormalization()(x)
+        x = WeightNormalization(Dense(128, activation='relu'))(x)
         x = Dense(num_params, activation='linear')(x)
         model = Model(inputs=x_input, outputs=x)
 
         model.compile(
             loss=tf.keras.losses.MeanSquaredError(),
-            # Adam algorithm set as optimizer gave the best results in terms of
-            # accuracy
             optimizer=tf.keras.optimizers.Adam(1e-3),
             metrics=['mse']
         )
