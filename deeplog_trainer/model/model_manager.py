@@ -11,14 +11,18 @@ class ModelManager:
     DEFAULT_LSTM_UNITS = 64
 
     # This is the factory method
-    def build(self, model_type: str, input_size, **kwargs):
-        kwargs = self._set_default_LSTM_units(kwargs)
+    def build(self, model_type: str, input_size: int, **kwargs):
+        lstm_units = kwargs.get('lstm_units', ModelManager.DEFAULT_LSTM_UNITS)
         if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
             self._validate_log_keys_kwargs(kwargs)
-            return self._build_log_keys_model(input_size=input_size, **kwargs)
+            return self._build_log_keys_model(input_size=input_size,
+                                              lstm_units=lstm_units,
+                                              num_tokens=kwargs['num_tokens'])
         elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
             self._validate_log_params_kwargs(kwargs)
-            return self._build_log_params_model(input_size=input_size, **kwargs)
+            return self._build_log_params_model(input_size=input_size,
+                                                lstm_units=lstm_units,
+                                                num_params=kwargs['num_params'])
         else:
             raise Exception('Model type unknown')
 
@@ -32,12 +36,8 @@ class ModelManager:
                                                       int)):
             raise Exception('Provide right params')
 
-    def _set_default_LSTM_units(self, kwargs):
-        if 'lstm_units' not in kwargs:
-            kwargs['lstm_units'] = ModelManager.DEFAULT_LSTM_UNITS
-        return kwargs
-
-    def _build_log_keys_model(self, input_size, lstm_units, num_tokens):
+    def _build_log_keys_model(self, input_size: int, lstm_units: int,
+                              num_tokens: int):
         # Consider using an embedding if there are too many different input
         # classes
         x = Input(shape=(input_size, num_tokens))
@@ -62,7 +62,8 @@ class ModelManager:
         )
         return model
 
-    def _build_log_params_model(self, input_size, lstm_units, num_params):
+    def _build_log_params_model(self, input_size: int, lstm_units: int,
+                                num_params: int):
         x = Input(shape=(input_size, num_params))
         x_input = x
 
@@ -81,9 +82,9 @@ class ModelManager:
         )
         return model
 
-    def save(self, model, output_path, output_file):
+    def save(self, model, output_path: str, output_file: str):
         model.save(os.path.join(output_path, output_file), save_format='h5')
 
-    def load(self, filepath):
+    def load(self, filepath: str):
         model = load_model(filepath)
         return model
