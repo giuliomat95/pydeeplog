@@ -78,10 +78,10 @@ if __name__ == '__main__':
     logger.info(
         'Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx),
                                             len(test_idx)))
-    model_manager = ModelManager(input_size=args.window_size,
-                                 lstm_units=args.LSTM_units)
-
+    model_manager = ModelManager()
     model = model_manager.build(ModelManager.MODEL_TYPE_LOG_KEYS,
+                                input_size=args.window_size,
+                                lstm_units=args.LSTM_units,
                                 num_tokens=num_tokens)
     model.summary()
     X_train, y_train = data_preprocess.transform(

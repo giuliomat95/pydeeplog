@@ -8,40 +8,43 @@ import os
 class ModelManager:
     MODEL_TYPE_LOG_KEYS = 'log_keys'
     MODEL_TYPE_LOG_PARAMS = 'log_params'
-
-    def __init__(self, input_size, lstm_units):
-        """
-        Attributes:
-        :param input_size: Length of network input object
-        :param num_tokens: Number of unique keys in the training file
-        :param lstm_units: Number of LSTM units in each layer of the network
-        """
-        self.input_size = input_size
-        self.lstm_units = lstm_units
+    DEFAULT_LSTM_UNITS = 64
 
     # This is the factory method
-    def build(self, model_type: str, **kwargs):
+    def build(self, model_type: str, input_size, **kwargs):
+        kwargs = self._set_default_LSTM_units(kwargs)
         if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
-            if not ('num_tokens' in kwargs and isinstance(kwargs['num_tokens'],
-                                                          int)):
-                raise Exception('Provide right params')
-            return self._build_log_keys_model(kwargs['num_tokens'])
+            self._validate_log_keys_kwargs(kwargs)
+            return self._build_log_keys_model(input_size=input_size, **kwargs)
         elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
-            if not ('num_params' in kwargs and isinstance(kwargs['params'],
-                                                          int)):
-                raise Exception('Provide right params')
-            return self._build_log_params_model(kwargs['num_params'])
+            self._validate_log_params_kwargs(kwargs)
+            return self._build_log_params_model(input_size=input_size, **kwargs)
         else:
             raise Exception('Model type unknown')
 
-    def _build_log_keys_model(self, num_tokens):
+    def _validate_log_keys_kwargs(self, kwargs):
+        if not ('num_tokens' in kwargs and isinstance(kwargs['num_tokens'],
+                                                      int)):
+            raise Exception('Provide right params')
+
+    def _validate_log_params_kwargs(self, kwargs):
+        if not ('num_params' in kwargs and isinstance(kwargs['params'],
+                                                      int)):
+            raise Exception('Provide right params')
+
+    def _set_default_LSTM_units(self, kwargs):
+        if 'lstm_units' not in kwargs:
+            kwargs['lstm_units'] = ModelManager.DEFAULT_LSTM_UNITS
+        return kwargs
+
+    def _build_log_keys_model(self, input_size, lstm_units, num_tokens):
         # Consider using an embedding if there are too many different input
         # classes
-        x = Input(shape=(self.input_size, num_tokens))
+        x = Input(shape=(input_size, num_tokens))
         x_input = x
 
-        x = LSTM(self.lstm_units, return_sequences=True)(x)
-        x = LSTM(self.lstm_units, return_sequences=False)(x)
+        x = LSTM(lstm_units, return_sequences=True)(x)
+        x = LSTM(lstm_units, return_sequences=False)(x)
         x = BatchNormalization()(x)
         x = WeightNormalization(Dense(256, activation='relu'))(x)
         x = BatchNormalization()(x)
@@ -59,11 +62,11 @@ class ModelManager:
         )
         return model
 
-    def _build_log_params_model(self, num_params):
-        x = Input(shape=(self.input_size, num_params))
+    def _build_log_params_model(self, input_size, lstm_units, num_params):
+        x = Input(shape=(input_size, num_params))
         x_input = x
 
-        x = LSTM(self.lstm_units, return_sequences=False)(x)
+        x = LSTM(lstm_units, return_sequences=True)(x)
         x = BatchNormalization()(x)
         x = WeightNormalization(Dense(256, activation='relu'))(x)
         x = BatchNormalization()(x)
