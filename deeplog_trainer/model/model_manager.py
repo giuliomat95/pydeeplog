@@ -21,16 +21,18 @@ class ModelManager:
 
     # This is the factory method
     def build(self, model_type: str, **kwargs):
-        if model_type not in ['log_keys', 'log_params']:
-            raise Exception('Model type unknown')
-        elif 'num_tokens' not in kwargs and 'num_params' not in kwargs:
-            raise Exception('Provide right parameters')
+        if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
+            if not ('num_tokens' in kwargs and isinstance(kwargs['num_tokens'],
+                                                          int)):
+                raise Exception('Provide right params')
+            return self._build_log_keys_model(kwargs['num_tokens'])
+        elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
+            if not ('num_params' in kwargs and isinstance(kwargs['params'],
+                                                          int)):
+                raise Exception('Provide right params')
+            return self._build_log_params_model(kwargs['num_params'])
         else:
-            for par in kwargs.values():
-                if model_type == ModelManager.MODEL_TYPE_LOG_KEYS:
-                    return self._build_log_keys_model(par)
-                elif model_type == ModelManager.MODEL_TYPE_LOG_PARAMS:
-                    return self._build_log_params_model(par)
+            raise Exception('Model type unknown')
 
     def _build_log_keys_model(self, num_tokens):
         # Consider using an embedding if there are too many different input
