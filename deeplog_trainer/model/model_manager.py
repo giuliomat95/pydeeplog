@@ -65,13 +65,18 @@ class ModelManager:
 
     def _build_log_params_model(self, input_size: int, lstm_units: int,
                                 num_params: int):
-        model = Sequential()
-        model.add(Bidirectional(LSTM(lstm_units, activation='relu',
-                                     input_shape=(input_size, num_params),
-                                     dropout=0.2)))
-        model.add(Dense(1))
+
+        x = tf.keras.layers.Input(shape=(input_size, num_params))
+        x_input = x
+
+        x = tf.keras.layers.LSTM(lstm_units, return_sequences=True)(x)
+        x = tf.keras.layers.LSTM(lstm_units, return_sequences=False)(x)
+        x = tf.keras.layers.Dense(num_params)(x)
+
+        model = tf.keras.models.Model(inputs=x_input, outputs=x)
+
         model.compile(
-            loss=tf.keras.losses.MeanSquaredError(),
+            loss='mse',
             optimizer=tf.keras.optimizers.Adam(1e-3),
             metrics=['mse']
         )
