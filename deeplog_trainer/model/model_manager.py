@@ -32,7 +32,7 @@ class ModelManager:
             raise Exception('Provide right params')
 
     def _validate_log_params_kwargs(self, kwargs):
-        if not ('num_params' in kwargs and isinstance(kwargs['params'],
+        if not ('num_params' in kwargs and isinstance(kwargs['num_params'],
                                                       int)):
             raise Exception('Provide right params')
 
@@ -69,9 +69,9 @@ class ModelManager:
 
         x = LSTM(lstm_units, return_sequences=True)(x)
         x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(256, activation='relu'))(x)
+        x = WeightNormalization(Dense(256))(x)
         x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(128, activation='relu'))(x)
+        x = WeightNormalization(Dense(128))(x)
         x = Dense(num_params, activation='linear')(x)
         model = Model(inputs=x_input, outputs=x)
 
