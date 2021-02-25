@@ -6,16 +6,13 @@ class DataPreprocess:
         Splits the dataset in smaller chunks with window_size as maximum length.
         """
         n_items = len(dataset)
-        n_params = np.shape(dataset)[1]
         inputs = []
         outputs = []
         assert window_size < n_items
         i = 0
-        while i + window_size <= n_items:
-            x = dataset[i:i+window_size-1]
-            x = np.vstack((x, np.zeros(n_params)))
-            x[-1][0] = dataset[window_size - 1][0]
-            y = dataset[i:i+window_size]
+        while i + window_size < n_items:
+            x = dataset[i:i+window_size]
+            y = dataset[i+window_size, -1]
             inputs.append(x)
             outputs.append(y)
             i += 1

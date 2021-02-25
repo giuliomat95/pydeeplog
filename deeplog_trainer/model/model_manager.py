@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow_addons.layers import WeightNormalization
-from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, LSTM, Dense, BatchNormalization
+from tensorflow.keras.models import Model, load_model, Sequential
+from tensorflow.keras.layers import Input, LSTM, Dense, Bidirectional, \
+    BatchNormalization
 import os
 
 
@@ -64,17 +65,11 @@ class ModelManager:
 
     def _build_log_params_model(self, input_size: int, lstm_units: int,
                                 num_params: int):
-        x = Input(shape=(input_size, num_params))
-        x_input = x
-
-        x = LSTM(lstm_units, return_sequences=True)(x)
-        x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(256))(x)
-        x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(128))(x)
-        x = Dense(num_params, activation='linear')(x)
-        model = Model(inputs=x_input, outputs=x)
-
+        model = Sequential()
+        model.add(Bidirectional(LSTM(lstm_units, activation='relu',
+                                     input_shape=(input_size, num_params),
+                                     dropout=0.2)))
+        model.add(Dense(1))
         model.compile(
             loss=tf.keras.losses.MeanSquaredError(),
             optimizer=tf.keras.optimizers.Adam(1e-3),
