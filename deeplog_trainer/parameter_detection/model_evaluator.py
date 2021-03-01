@@ -21,13 +21,13 @@ class ModelEvaluator:
         """
         self.logger = logger
 
-    def plot_time_series(self, scaler, idxs, y_true, y_pred, label):
+    def plot_time_series(self, scaler, timestamps, y_true, y_pred, label):
         """
         Description: Plot time series trend for each parameter as well as its
         predictions
         :param scaler: Object of the package sklearn used to normalize the
         dataset
-        :param idxs: original idxs of the data to be plotted
+        :param timestamps: original idxs of the data to be plotted
         :param y_true: true value vectors to be predicted
         :param y_pred: model predictions of the `y_true` array
         :param label: title of the graph
@@ -37,11 +37,11 @@ class ModelEvaluator:
         num_params = np.shape(y_true)[1]
         for i in range(1, num_params):
             plt.figure(figsize=(20, 6))
-            plt.plot(idxs, y_true[:, i], 'o-', mfc='none',
+            plt.plot(timestamps, y_true[:, i], 'o-', mfc='none',
                      label='Real')
-            plt.plot(idxs, y_pred[:, i], 'o-',
+            plt.plot(timestamps, y_pred[:, i], 'o-',
                      mfc='none', label='Prediction', color='red')
-            plt.xticks(idxs)
+            plt.xticks(timestamps)
             plt.title(label + 'Parameter' + str(i))
             plt.legend()
             plt.show()

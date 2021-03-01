@@ -49,7 +49,7 @@ if __name__ == '__main__':
                         default=0.95)
     args = parser.parse_args()
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    # Upload the synthetic data to be evaluated
+    # Upload the data to be evaluated
     with open(os.path.join(root_path, args.input_file), 'r') as fp:
         dataset = json.load(fp)['data']
     dataset = np.array(dataset)
