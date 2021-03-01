@@ -93,11 +93,15 @@ if __name__ == '__main__':
     y_val_pred = model.predict(X_val)
     # Model Evaluation:
     model_evaluator = ModelEvaluator(logger)
-    interval = model_evaluator.build_confidence_interval(y_val, y_val_pred,
-                                                         args.alpha)
+    interval, mse_val = model_evaluator.build_confidence_intervals(y_val,
+                                                                   y_val_pred,
+                                                                   args.alpha)
+    model_evaluator.plot_confidence_intervals(interval, mse_val, args.alpha)
     y_test_pred = model.predict(X_test)
-    anomalies_idx = model_evaluator.get_anomalies_idx(y_test, y_test_pred,
-                                                      interval, args.alpha)
+    anomalies_idx, mse_test = model_evaluator.get_anomalies_idx(y_test,
+                                                                y_test_pred,
+                                                                interval)
+    model_evaluator.plot_test_errors(interval, mse_test, args.alpha)
     model_evaluator.plot_time_series(sc_X, dataset, val_idx, test_idx,
                                      args.window_size, y_val_pred, y_test_pred)
     logger.info("Number of anomalies: {}".format(len(anomalies_idx)))

@@ -24,16 +24,13 @@ class DataPreprocess:
     @staticmethod
     def split_idx(dataset_size, train_ratio, val_ratio):
         """
-        Splits indices of the data into the usual three subsets: training,
-        validation and testing.
-
-        Arguments:
-        - dataset_size
-        - train_ratio (float): defines the subset for training.
-        - val_ratio (float): defines the subset for validation (must be greater
+        Description: splits indices of the data into the usual three subsets:
+        training, validation and testing.
+        :param: dataset_size: length of dataset
+        :param: train_ratio (float): defines the subset for training.
+        :param: val_ratio (float): defines the subset for validation (must be greater
         than train_ratio).
-
-        Returns: three subsets of the input dataset.
+        :return three subsets of the input dataset.
         """
         train_idx, val_idx, test_idx = \
             np.split(np.arange(dataset_size),

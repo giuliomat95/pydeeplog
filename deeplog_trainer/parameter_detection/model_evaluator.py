@@ -22,6 +22,8 @@ class ModelEvaluator:
     def plot_time_series(self, scaler, dataset, val_idx: list, test_idx: list,
                          window_size: int, y_val_pred: list, y_test_pred: list):
         """
+        Description: Plot time series trend for each parameter as well as its
+        predictions
         :param scaler: Object of the package sklearn used to normalize the
         dataset
         :param dataset: input data of the model to be evaluated
@@ -30,8 +32,6 @@ class ModelEvaluator:
         :param window_size: length of input array at each time step
         :param y_val_pred: predictions of the outputs of the validation set
         :param y_test_pred: predictions of the outputs of the testing set
-        :return: times series graph for each parameter showing the evolution of
-        the data and its prediction.
         """
         y_val_pred = scaler.inverse_transform(y_val_pred)
         y_test_pred = scaler.inverse_transform(y_test_pred)
@@ -60,23 +60,36 @@ class ModelEvaluator:
             errors.append(mean_squared_error(y_data[i], y_pred[i]))
         return errors
 
-    def build_confidence_interval(self, y_val: list, y_val_pred: list,
+    def build_confidence_intervals(self, y_val: list, y_val_pred: list,
                                   alpha: float = 0.95):
         """
         :param y_val: outputs array of the validation set
         :param y_val_pred: predictions of the outputs of the validation set
         :param alpha: confidence level of the confidence interval
         :return: the two endpoints of the confidence interval of the Gaussian
-        distribution of MSEs from the validation set, as well as a graph showing
-        the Gaussian distribution and the related confidence interval.
+        distribution of MSEs from the validation set, as well as the MSE values
         """
-        MSE_val = self.get_MSEs(y_val, y_val_pred)
-        mu = np.mean(MSE_val)
-        sd = np.std(MSE_val)
-        x = np.linspace(0, max(MSE_val), 1000)
+        mse_val = self.get_MSEs(y_val, y_val_pred)
+        mu = np.mean(mse_val)
+        sd = np.std(mse_val)
         # Model the MSEs as a Gaussian distribution and build the confidence
         # interval of level alpha
         interval = stats.norm.interval(alpha, mu, sd)
+        return interval, mse_val
+
+    def plot_confidence_intervals(self, interval, mse_val, alpha):
+        """
+        Description: Plot the Gaussian distribution and the related confidence
+        interval.
+        :param interval: Confidence interval of the Gaussian distribution built
+        with the MSEs from the validation set
+        :param mse_val: MSEs between each vector in the validation set and its
+        prediction
+        :param alpha: confidence level of the confidence interval
+        """
+        mu = np.mean(mse_val)
+        sd = np.std(mse_val)
+        x = np.linspace(0, max(mse_val), 1000)
         pdf = stats.norm.pdf(x, mu, sd)
         plt.plot(x, pdf)
         plt.fill_between(x, pdf, where=(x > interval[0]) & (x <= interval[1]),
@@ -84,28 +97,35 @@ class ModelEvaluator:
         plt.title('Confidence interval of level {} for validation errors'
                   .format(alpha))
         plt.show()
-        return interval
 
-    def get_anomalies_idx(self, y_test: list, y_test_pred: list, interval: list,
-                          alpha: float):
+    def get_anomalies_idx(self, y_test: list, y_test_pred: list,
+                          interval: list):
         """
         :param y_test: outputs array of the testing set
         :param y_test_pred: predictions of the outputs of the testing set
         :param interval: confidence interval of the Gaussian distribution built
         with the MSEs from the validation set
-        :param alpha: confidence level of the confidence interval
         :return: indexes of data labeled as anomalous as well as a graph showing
         the trend of the MSEs.
         """
-        MSE_test = self.get_MSEs(y_test, y_test_pred)
-        anomalies_idx = [i for i in range(len(MSE_test))
-                         if MSE_test[i] > interval[1]
-                         or MSE_test[i] < interval[0]]
-        plt.hlines(interval[1], 0, len(MSE_test), colors='red', linestyles='--',
+        mse_test = self.get_MSEs(y_test, y_test_pred)
+        anomalies_idx = [i for i in range(len(mse_test))
+                         if mse_test[i] > interval[1]
+                         or mse_test[i] < interval[0]]
+        return anomalies_idx, mse_test
+
+    def plot_test_errors(self, interval, mse_test, alpha):
+        """
+        :param interval: confidence interval of the Gaussian distribution built
+        with the MSEs from the validation set
+        :param alpha: confidence level of the confidence interval
+        :param mse_test: MSEs between each vector in the testing set and its
+        prediction
+        """
+        plt.hlines(interval[1], 0, len(mse_test), colors='red', linestyles='--',
                    label='CI={:d}%'.format(int(alpha*100)))
         plt.legend()
         plt.title('Value vector errors')
         plt.ylabel('MSE')
-        plt.plot(MSE_test)
+        plt.plot(mse_test)
         plt.show()
-        return anomalies_idx
