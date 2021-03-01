@@ -3,7 +3,7 @@ import numpy as np
 
 
 class ValLossLogger(tf.keras.callbacks.Callback):
-    def __init__(self, logger, loss_index, metric_index):
+    def __init__(self, logger, loss_index: str, metric_index: str):
         """
         Attributes
         :param logger: logger function from logging module
@@ -67,7 +67,7 @@ class ModelTrainer:
     Classification, which is a supervised learning problem aiming to predict
     class labels over the time based on past behaviour.
     """
-    def __init__(self, logger, epochs, batch_size, early_stop):
+    def __init__(self, logger, epochs: int, batch_size: int, early_stop: int):
         """
         :param logger: logger function from logging module
         :param epochs: Number of times the entire dataset is passed forward and
@@ -89,13 +89,13 @@ class ModelTrainer:
         Given the model, the train and validation set as arguments, the method
         train process is trigger. The model checkpoints allows to save the model
         according to the 'monitor' index.
-        :param metric_index: metric index
-        :param loss_index: loss function name
-        :argument out_tensorboard_path: output path where to save the
+        :param model: a Keras model instance
+        :param train_dataset: train set type array
+        :param val_dataset: validation set type array
+        :param out_tensorboard_path: output path where to save the
         tensorboard results
-        :argument model: a Keras model instance
-        :argument train_dataset: train set type array
-        :argument val_dataset: validation set type array
+        :param loss_index: loss function name
+        :param metric_index: metric index
         """
         train_logger = ValLossLogger(self.logger, loss_index, metric_index)
         early_stop = tf.keras.callbacks.EarlyStopping(

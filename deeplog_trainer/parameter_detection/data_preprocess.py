@@ -11,7 +11,7 @@ class DataPreprocess:
         outputs = []
         assert window_size < n_items
         i = 0
-        while i + window_size < n_items:
+        while i + window_size <= n_items:
             x = dataset[i:i+window_size-1]
             x = np.vstack((x, np.zeros(n_params)))
             x[-1][0] = dataset[i+window_size-1][0]

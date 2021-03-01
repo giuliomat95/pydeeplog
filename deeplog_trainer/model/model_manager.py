@@ -71,6 +71,7 @@ class ModelManager:
 
         x = tf.keras.layers.LSTM(lstm_units, return_sequences=True)(x)
         x = tf.keras.layers.LSTM(lstm_units, return_sequences=False)(x)
+        x = tf.keras.layers.Dropout(0.2)(x)
         x = tf.keras.layers.Dense(num_params)(x)
 
         model = tf.keras.models.Model(inputs=x_input, outputs=x)
