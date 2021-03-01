@@ -5,6 +5,7 @@ from sklearn.datasets import make_regression
 import numpy as np
 import logging as logger
 import argparse
+import json
 
 from deeplog_trainer.parameter_detection.data_preprocess import DataPreprocess
 from deeplog_trainer.model.training import ModelTrainer
@@ -16,6 +17,9 @@ logger.basicConfig(stream=sys.stdout, level=logger.INFO, format='%(message)s')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--input_file", type=str,
+                        help="Put the input json dataset filepath from root "
+                             "folder")
     parser.add_argument("--window_size", type=int,
                         help="Put the window_size parameter", default=5)
     parser.add_argument("--LSTM_units", type=int,
@@ -37,15 +41,6 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int,
                         help="Put the number of samples that will be propagated"
                              " through the network", default=16)
-    parser.add_argument("--n_samples", type=int, help="Number of samples of the"
-                                                      "synthetic data",
-                        default=100)
-    parser.add_argument("--n_targets", type=int, help="The number of regression"
-                                                      "targets",
-                        default=2)
-    parser.add_argument("--noise", type=int, help="Standard deviation of the"
-                                                  "gaussian noise applied to"
-                                                  "the output", default=5)
     parser.add_argument("--out_tensorboard_path", type=str,
                         help="Put the name of the folder where to save the "
                              "tensorboard results if desired", default=None)
@@ -53,11 +48,11 @@ if __name__ == '__main__':
                                                     "confidence interval",
                         default=0.95)
     args = parser.parse_args()
-    # generate synthetic dataset to evaluate parameter anomaly detection model
-    x, y = make_regression(n_samples=args.n_samples, n_features=1,
-                           n_targets=args.n_targets,  noise=args.noise)
-    y = np.reshape(y, (args.n_samples, args.n_targets))
-    dataset = np.concatenate((x, y), axis=1)
+    root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    # Upload the synthetic data to be evaluated
+    with open(os.path.join(root_path, args.input_file), 'r') as fp:
+        dataset = json.load(fp)['data']
+    dataset = np.array(dataset)
     num_params = dataset.shape[1]
     data_preprocess = DataPreprocess()
     train_idx, val_idx, test_idx = \
@@ -102,6 +97,12 @@ if __name__ == '__main__':
                                                                 y_test_pred,
                                                                 interval)
     model_evaluator.plot_test_errors(interval, mse_test, args.alpha)
-    model_evaluator.plot_time_series(sc_X, dataset, val_idx, test_idx,
-                                     args.window_size, y_val_pred, y_test_pred)
+    model_evaluator.plot_time_series(sc_X, val_idx[args.window_size-1:],
+                                     y_val, y_val_pred,
+                                     label='Forecasting results of validation '
+                                           'set: ')
+    model_evaluator.plot_time_series(sc_X, test_idx[args.window_size-1:],
+                                     y_test, y_test_pred,
+                                     label='Forecasting result of the testing '
+                                           'set: ')
     logger.info("Number of anomalies: {}".format(len(anomalies_idx)))

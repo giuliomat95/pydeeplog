@@ -30,12 +30,12 @@ class ModelManager:
     def _validate_log_keys_kwargs(self, kwargs):
         if not ('num_tokens' in kwargs and isinstance(kwargs['num_tokens'],
                                                       int)):
-            raise Exception('Provide right params')
+            raise ValueError('Provide right params')
 
     def _validate_log_params_kwargs(self, kwargs):
         if not ('num_params' in kwargs and isinstance(kwargs['num_params'],
                                                       int)):
-            raise Exception('Provide right params')
+            raise ValueError('Provide right params')
 
     def _build_log_keys_model(self, input_size: int, lstm_units: int,
                               num_tokens: int):

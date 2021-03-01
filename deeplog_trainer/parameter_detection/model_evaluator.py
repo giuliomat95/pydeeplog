@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
 
+
 class ModelEvaluator:
     """
     Description: To evaluate the parameter detection anomaly detection model,
@@ -13,43 +14,39 @@ class ModelEvaluator:
     the parameter value vector of the incoming log entry is considered normal,
     otherwise abnormal.
     """
+
     def __init__(self, logger):
         """
         :param logger: logger function from logging module
         """
         self.logger = logger
 
-    def plot_time_series(self, scaler, dataset, val_idx: list, test_idx: list,
-                         window_size: int, y_val_pred: list, y_test_pred: list):
+    def plot_time_series(self, scaler, idxs, y_true, y_pred, label):
         """
         Description: Plot time series trend for each parameter as well as its
         predictions
         :param scaler: Object of the package sklearn used to normalize the
         dataset
-        :param dataset: input data of the model to be evaluated
-        :param val_idx: indexes of the validation set
-        :param test_idx: indexes of the testing set
-        :param window_size: length of input array at each time step
-        :param y_val_pred: predictions of the outputs of the validation set
-        :param y_test_pred: predictions of the outputs of the testing set
+        :param idxs: original idxs of the data to be plotted
+        :param y_true: true value vectors to be predicted
+        :param y_pred: model predictions of the `y_true` array
+        :param label: title of the graph
         """
-        y_val_pred = scaler.inverse_transform(y_val_pred)
-        y_test_pred = scaler.inverse_transform(y_test_pred)
-        num_params = dataset.shape[1]
+        y_true = scaler.inverse_transform(y_true)
+        y_pred = scaler.inverse_transform(y_pred)
+        num_params = np.shape(y_true)[1]
         for i in range(1, num_params):
             plt.figure(figsize=(20, 6))
-            plt.plot(np.arange(len(dataset)), dataset[:, i], 'o-', mfc='none',
+            plt.plot(idxs, y_true[:, i], 'o-', mfc='none',
                      label='Real')
-            plt.plot(val_idx[window_size-1:], y_val_pred[:, i], 'o-',
-                     mfc='none', label='Valid Prediction')
-            plt.plot(test_idx[window_size-1:], y_test_pred[:, i], 'o-',
-                     mfc='none', label='Test Prediction', color='r')
-            plt.axvspan(val_idx[0], val_idx[-1], color='orange', alpha=0.2)
-            plt.axvspan(test_idx[0], test_idx[-1], color='red', alpha=0.2)
+            plt.plot(idxs, y_pred[:, i], 'o-',
+                     mfc='none', label='Prediction', color='red')
+            plt.xticks(idxs)
+            plt.title(label + 'Parameter' + str(i))
             plt.legend()
             plt.show()
 
-    def get_MSEs(self, y_data: list, y_pred: list):
+    def get_mses(self, y_data: list, y_pred: list):
         """
         :param y_data: outputs array to predict
         :param y_pred: predictions of `y_data`
@@ -61,7 +58,7 @@ class ModelEvaluator:
         return errors
 
     def build_confidence_intervals(self, y_val: list, y_val_pred: list,
-                                  alpha: float = 0.95):
+                                   alpha: float = 0.95):
         """
         :param y_val: outputs array of the validation set
         :param y_val_pred: predictions of the outputs of the validation set
@@ -69,7 +66,7 @@ class ModelEvaluator:
         :return: the two endpoints of the confidence interval of the Gaussian
         distribution of MSEs from the validation set, as well as the MSE values
         """
-        mse_val = self.get_MSEs(y_val, y_val_pred)
+        mse_val = self.get_mses(y_val, y_val_pred)
         mu = np.mean(mse_val)
         sd = np.std(mse_val)
         # Model the MSEs as a Gaussian distribution and build the confidence
@@ -98,17 +95,17 @@ class ModelEvaluator:
                   .format(alpha))
         plt.show()
 
-    def get_anomalies_idx(self, y_test: list, y_test_pred: list,
+    def get_anomalies_idx(self, y_true: list, y_pred: list,
                           interval: list):
         """
-        :param y_test: outputs array of the testing set
-        :param y_test_pred: predictions of the outputs of the testing set
+        :param y_true: outputs array of the testing set
+        :param y_pred: predictions of the outputs of the testing set
         :param interval: confidence interval of the Gaussian distribution built
         with the MSEs from the validation set
         :return: indexes of data labeled as anomalous as well as a graph showing
         the trend of the MSEs.
         """
-        mse_test = self.get_MSEs(y_test, y_test_pred)
+        mse_test = self.get_mses(y_true, y_pred)
         anomalies_idx = [i for i in range(len(mse_test))
                          if mse_test[i] > interval[1]
                          or mse_test[i] < interval[0]]
@@ -123,7 +120,7 @@ class ModelEvaluator:
         prediction
         """
         plt.hlines(interval[1], 0, len(mse_test), colors='red', linestyles='--',
-                   label='CI={:d}%'.format(int(alpha*100)))
+                   label='CI={:d}%'.format(int(alpha * 100)))
         plt.legend()
         plt.title('Value vector errors')
         plt.ylabel('MSE')
