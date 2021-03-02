@@ -4,7 +4,6 @@ from deeplog_trainer.model.model_evaluator import ModelEvaluator
 from deeplog_trainer.model.data_preprocess import DataPreprocess
 import json
 import numpy as np
-import pdb
 
 @pytest.fixture(scope='function')
 def setup(dataset):
