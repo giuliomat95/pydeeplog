@@ -18,7 +18,7 @@ def get_data1():
 def test_node_get_methods(mocker, node_data):
     # Mock network class
     mocked_network = \
-        mocker.patch('deeplog_trainer.workflow.build_workflow.Network',
+        mocker.patch('deeplog_trainer.workflow.workflow.Network',
                      autospec=True)
     # Initialise the node with the data in input and test each attribute got the
     # right value
@@ -37,7 +37,7 @@ def test_node_get_methods(mocker, node_data):
 )
 def test_node_set_methods(mocker, value, is_start, is_end, idx, parents_idx):
     mocked_network = \
-        mocker.patch('deeplog_trainer.workflow.build_workflow.Network',
+        mocker.patch('deeplog_trainer.workflow.workflow.Network',
                      autospec=True)
     node = Node(mocked_network, value)
     node.set_start(is_start)
@@ -68,7 +68,7 @@ def get_data2():
 def test_node_add_children(mocker, data_node1, data_node2, data_node3,
                            data_node4):
     mocked_network = \
-        mocker.patch('deeplog_trainer.workflow.build_workflow.Network',
+        mocker.patch('deeplog_trainer.workflow.workflow.Network',
                      autospec=True)
     # Call the mocked class
     instance = mocked_network.return_value

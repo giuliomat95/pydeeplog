@@ -1,8 +1,7 @@
 import tensorflow as tf
 from tensorflow_addons.layers import WeightNormalization
-from tensorflow.keras.models import Model, load_model, Sequential
-from tensorflow.keras.layers import Input, LSTM, Dense, Bidirectional, \
-    BatchNormalization
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.layers import Input, LSTM, Dense, BatchNormalization
 import os
 
 

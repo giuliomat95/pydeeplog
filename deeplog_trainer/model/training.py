@@ -48,7 +48,7 @@ class ValLossLogger(tf.keras.callbacks.Callback):
         Called at the end of the training process. The loss/accuracy value
         of the best model are displayed
         """
-        self.logger.info('%s: %.4f (%s: %.4f) - Val. %s:  %.4f '
+        self.logger.info('%s: %.4f (%s: %.4f) - Val. %s: %.4f '
                          '(%s: %.4f)' % (self.loss_index,
                                          self.best_loss['train'],
                                          self.metric_index,
