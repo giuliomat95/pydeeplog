@@ -25,5 +25,4 @@ def test_data_preprocess(dataset, train_ratio, val_ratio, window_size):
     assert X_train.shape == (len(train_dataset)-window_size+1, window_size,
                              dataset.shape[1])
     assert y_train.shape == (len(train_dataset)-window_size+1, dataset.shape[1])
-    for i in range(len(X_train)):
-        assert X_train[i, -1, 0] == y_train[i, 0]
+
