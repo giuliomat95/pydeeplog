@@ -34,7 +34,7 @@ class ModelEvaluator:
         """
         y_true = scaler.inverse_transform(y_true)
         y_pred = scaler.inverse_transform(y_pred)
-        num_params = np.shape(y_true)[1]
+        num_params = y_true.shape[1]
         for i in range(1, num_params):
             plt.figure(figsize=(20, 6))
             plt.plot(timestamps, y_true[:, i], 'o-', mfc='none',
@@ -74,7 +74,7 @@ class ModelEvaluator:
         interval = stats.norm.interval(alpha, mu, sd)
         return interval, mse_val
 
-    def plot_confidence_intervals(self, interval, mse_val, alpha):
+    def plot_confidence_intervals(self, interval, mse_val, alpha=0.95):
         """
         Description: Plot the Gaussian distribution and the related confidence
         interval.
@@ -111,7 +111,7 @@ class ModelEvaluator:
                          or mse_test[i] < interval[0]]
         return anomalies_idx, mse_test
 
-    def plot_test_errors(self, interval, mse_test, alpha):
+    def plot_test_errors(self, interval, mse_test, alpha=0.95):
         """
         :param interval: confidence interval of the Gaussian distribution built
         with the MSEs from the validation set

@@ -1,7 +1,6 @@
 import os
 import sys
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.datasets import make_regression
 import numpy as np
 import logging as logger
 import argparse
