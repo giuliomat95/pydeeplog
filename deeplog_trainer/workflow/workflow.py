@@ -47,7 +47,6 @@ class WorkflowBuilder:
         """
         Find similar sequences using BLEU score.
         """
-
         if verbose > 0:
             self.logger.info('{0}Searching similar sequences...'.format(
                 verbose_prefix))

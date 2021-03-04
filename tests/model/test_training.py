@@ -13,7 +13,8 @@ def setup(dataset):
     # List of unique keys in the training file
     vocab = list(set([x for seq in dataset for x in seq]))
     data_preprocess = DataPreprocess(vocab=vocab)
-    train_logger = ValLossLogger(logger)
+    train_logger = ValLossLogger(logger, loss_index='loss',
+                                 metric_index='accuracy')
     model_trainer = ModelTrainer(logger, epochs=50, early_stop=7,
                                  batch_size=512)
     return data_preprocess, train_logger, model_trainer
@@ -61,8 +62,11 @@ def test_model_trainer(setup, dataset, capture, window_size=7):
     train_logger.on_train_end()
     capture.check(
         ('root', 'INFO', 'Start training'),
-        ('root', 'INFO', 'Loss: inf (acc.: 0.0000) - Val. loss:  inf '
-                         '(acc.: 0.0000)'),
+        ('root', 'INFO', '{}: inf ({}: 0.0000) - Val. {}: inf '
+                         '({}: 0.0000)'.format(train_logger.loss_index,
+                                               train_logger.metric_index,
+                                               train_logger.loss_index,
+                                               train_logger.metric_index)),
         ('root', 'INFO', 'Training finished')
     )
     assert isinstance(history, MockModel)
