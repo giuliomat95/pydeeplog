@@ -108,11 +108,12 @@ The parameters without default values are mandatory to run the file.
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
 Example of execution:
 ```
-python3 -m path.to.script.run.run_model.py --input_file run/batrasio_result/data.json --output_path model_result  
+python3 -m path.to.script.run.run_model.py --input_file run/data/data.json --output_path model_result  
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 
 ## Run parameter value anomaly detection model
+
 To run the `run_parameter_detection.py` file, set the following parameters in the command line:
 + input_file: path of the input dataset to parse, with all the parameters of a specific log key message.
 + window_size: length of chunks, input of the LSTM neural network. Default value set to 5.
@@ -126,13 +127,21 @@ To run the `run_parameter_detection.py` file, set the following parameters in th
   Default value set to `None`.
 + alpha: confidence level of the confidence interval. Default value se to 0.95.
 
+Execute the command `python3 -m run.run_parameter_detection.py -h` to display the arguments.
+Example of execution:
+```
+python3 -m path.to.script.run.run_model.py --input_file run/data/dataset.json --output_path model_result  
+--output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 --val_ratio 0.75 --out_tensorboard_path logdir
+```
 ## Tensorboard
+
 To visualize the evolution of the loss/accuracy trend of the train/validation process, run the following code from the 
 root folder:
 ```
 tensorboard --logdir logdir
 ```
 ## Tests
+
 Run tests with Pytest: from the root folder of the project run the following code:
 ```
 pytest 
