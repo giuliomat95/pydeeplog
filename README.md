@@ -53,10 +53,6 @@ At deployment, if the error between a prediction and an observed value vector is
 interval of the above Gaussian distribution, the parameter value vector of the incoming log entry is considered normal,
 and is abnormal otherwise. 
 
-In this tutorial we will evaluate DeepLog on Batrasio, a real time data set provided by the Devo platform. 
-In Batrasio, every message containing the text "*TCP source SSL error*" or "*TCP source socket error*" is labeled as 
-abnormal.
-
 ## Dev environment
 
 The first step is to create a virtual environment. You can do this with PyCharm or from the terminal as follows:
@@ -164,5 +160,9 @@ coverage erase && \
 coverage run --include='./deeplog_trainer/*' -m pytest && \
 coverage report --include='./deeplog_trainer/*' -m && \
 coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
-
 ```
+
+## Quick Example
+In this tutorial we will evaluate DeepLog on Batrasio, a real time data set provided by the Devo platform. 
+In Batrasio, every message containing the text "*TCP source SSL error*" or "*TCP source socket error*" is labeled as 
+abnormal.
