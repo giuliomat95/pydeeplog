@@ -112,7 +112,7 @@ python3 -m path.to.script.run.run_model.py --input_file run/batrasio_result/data
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 
-##Run parameter value anomaly detection model
+## Run parameter value anomaly detection model
 To run the `run_parameter_detection.py` file, set the following parameters in the command line:
 + input_file: path of the input dataset to parse, with all the parameters of a specific log key message.
 + window_size: length of chunks, input of the LSTM neural network. Default value set to 5.
