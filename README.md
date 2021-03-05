@@ -210,7 +210,7 @@ coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 ```
 
 ## Quick Example
-In order to evaluate DeepLog we have use the Batrasio system logs, a real time 
+In order to evaluate DeepLog we have used Batrasio system logs, a real time 
 data set provided by the Devo platform. In Batrasio, every message containing 
 the text "*TCP source SSL error*" or "*TCP source socket error*" is labeled as 
 abnormal.
