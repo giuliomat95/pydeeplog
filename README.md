@@ -105,8 +105,8 @@ Run the following code from terminal. The arguments --input and --output are
 respectively the filepath of the data to be parsed and the name of the folder 
 where the results will be saved 
 ```sh
-python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log \
---output_path batrasio_result
+python3 -m path.to.script.run.run_drain --input_file data/filename.log \
+--output_path result
 ```
 
 ## Run Log key anomaly detection Model
@@ -149,6 +149,12 @@ The Config filename is
 
 ## Run parameter value anomaly detection model
 
+In order to evaluate the parameter value anomaly detection model, due to the 
+absence of a dataset with log messages whose parameter values are mainly 
+numerical, we used a synthetic data. In general, it should be provided a 
+different matrix with all the parameters for each log key derived from the log 
+parser stage.
+ 
 To run the `run_parameter_detection.py` file, set the following parameters in 
 the command line:
 + `input_file`: path of the input dataset to parse, with all the parameters of a
@@ -174,8 +180,8 @@ Execute the command `python3 -m run.run_parameter_detection.py -h` to display
 the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file run/data/dataset.json \
---output_path model_result \
+python3 -m path.to.script.run.run_parameter_detection.py --input_file 
+run/data/dataset.json --output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
@@ -207,7 +213,35 @@ coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 ```
 
 ## Quick Example
-In order to evaluate DeepLog we have used Batrasio system logs, a real time 
-data set provided by the Devo platform. In Batrasio, every message containing 
-the text "*TCP source SSL error*" or "*TCP source socket error*" is labeled as 
-abnormal.
+Let's see, for instance, how to apply, Deeplog on Batrasio system logs, a real 
+time data set provided by the Devo platform. \
+In Batrasio dataset, each session
+starts with the delimiter “*TCP source connection created*”.  Every time the 
+delimiter is detected in the content, a new session is created and it contains 
+all the following messages until the delimiter is shown again. About the 
+anomalies, instead, all the messages containing the text 
+"*TCP source SSL error*" or "*TCP source socket error*" are labeled as abnormal.
+We stored a sample of the dataset in the `data` folder, called 
+`sample_batrasio.log`.
+
+### Commands:
++ Drain: 
+```sh 
+python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log \
+--output_path batrasio_result
+```
++ Log Key anomaly detection:
+```sh
+python3 -m path.to.script.run.run_model.py --input_file \
+run/batrasio_result/data.json --output_path model_result \
+--output_file model.h5 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
+--val_ratio 0.75 --out_tensorboard_path logdir
+```
++ Parameter value anomaly detection:
+```sh
+python3 -m path.to.script.run.run_parameter_detection.py --input_file 
+run/data/dataset.json --output_path model_result \
+--output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
+--val_ratio 0.75 --out_tensorboard_path logdir
+```
+
