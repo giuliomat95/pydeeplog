@@ -105,7 +105,7 @@ Run the following code from terminal. The arguments --input and --output are
 respectively the filepath of the data to be parsed and the name of the folder 
 where the results will be saved 
 ```sh
-python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log
+python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log \
 --output_path batrasio_result
 ```
 
