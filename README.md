@@ -89,7 +89,7 @@ On Pycharm it can be done on `Settings > Project > Python interpreter`.
 ## Docker containers
 
 ```sh
-docker build --tag docker.devo.internal/dev/mlx/experiments/deeplog-trainer:
+docker build --tag docker.devo.internal/dev/mlx/experiments/deeplog-trainer: \
 latest .
 ```
 
