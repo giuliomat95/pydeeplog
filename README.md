@@ -131,8 +131,7 @@ be stopped. Default value set to 7.
 + `max_epochs`: maximum number of epochs if the process is not stopped before by
  the early_stop. Default value set to 50.
 + `out_tensorboard_path`: name of the folder where to save the tensorboard 
-results. If empty any board is stored. 
-  Default value set to `None`.
+results. If empty any board is stored. Default value set to `None`.
 
 The parameters without default values are mandatory to run the file.  
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
@@ -141,8 +140,7 @@ Example of execution:
 python3 -m path.to.script.run.run_model.py --input_file run/data/data.json 
 --output_path model_result  
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 
---val_ratio 0.75 --out_tensorboard_path 
-logdir
+--val_ratio 0.75 --out_tensorboard_path logdir
 ```
 The Drain's algorithm parameters, instead, are configured using 
 [configparser](https://docs.python.org/3.4/library/configparser.html). 
@@ -179,8 +177,7 @@ Example of execution:
 python3 -m path.to.script.run.run_model.py --input_file run/data/dataset.json 
 --output_path model_result  
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 
---val_ratio 0.75 --out_tensorboard_path 
-logdir
+--val_ratio 0.75 --out_tensorboard_path logdir
 ```
 ## Tensorboard
 
