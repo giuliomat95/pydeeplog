@@ -137,9 +137,9 @@ The parameters without default values are mandatory to run the file.
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file run/data/data.json 
---output_path model_result  
---output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 
+python3 -m path.to.script.run.run_model.py --input_file run/data/data.json \
+--output_path model_result \
+--output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 The Drain's algorithm parameters, instead, are configured using 
@@ -174,9 +174,9 @@ Execute the command `python3 -m run.run_parameter_detection.py -h` to display
 the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file run/data/dataset.json 
---output_path model_result  
---output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 
+python3 -m path.to.script.run.run_model.py --input_file run/data/dataset.json \
+--output_path model_result \
+--output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 ## Tensorboard
