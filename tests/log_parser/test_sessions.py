@@ -1,4 +1,4 @@
-from deeplog_trainer.log_parser.adapter import BatrasioAdapter
+from deeplog_trainer.log_parser.adapter import SessionAdapter
 from drain3 import TemplateMiner
 from deeplog_trainer.log_parser.drain import Drain
 from deeplog_trainer.log_parser.sessions import SessionStorage
@@ -8,7 +8,11 @@ import re
 
 @pytest.fixture(scope='session')
 def setup():
-    adapter = BatrasioAdapter()
+    adapter = SessionAdapter(logformat='<Pid>  <Content>',
+                             delimiter='TCP source connection created',
+                             anomaly_labels=['TCP source SSL error',
+                                             'TCP source socket error'],
+                             regex=r"^(\d+)")
     template_miner = TemplateMiner()
     drain = Drain(template_miner)
     session_storage = SessionStorage()
@@ -22,7 +26,7 @@ def get_data():
 @pytest.mark.parametrize("logs", get_data())
 def test_dict(logs, setup):
     adapter, drain, session_storage = setup
-    sess_id, anomaly_flag = adapter.get_session_id(log_msg=logs)
+    sess_id, anomaly_flag = adapter.get_session_id(log=logs)
     procid = re.search(r"^(\d+)", logs)[0]
     content = logs.split(procid)[1].strip()
     drain_result = drain.add_message(content)

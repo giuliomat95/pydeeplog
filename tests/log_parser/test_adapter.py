@@ -1,10 +1,14 @@
-from deeplog_trainer.log_parser.adapter import BatrasioAdapter
+from deeplog_trainer.log_parser.adapter import SessionAdapter
 import pytest
 
 
 @pytest.fixture(scope='session')
 def adapter():
-    return BatrasioAdapter()
+    return SessionAdapter(logformat='<Pid>  <Content>',
+                          delimiter='TCP source connection created',
+                          anomaly_labels=['TCP source SSL error',
+                                          'TCP source socket error'],
+                          regex=r"^(\d+)")
 
 def get_data():
     expected_sess_id = [1, 1, 1, 2, 2, 2, 2, 3, 2, 3, 3, 3, 3]
@@ -14,7 +18,7 @@ def get_data():
 
 @pytest.mark.parametrize("logs,expected", get_data())
 def test_get_sessionId(logs, expected, adapter):
-    sess_id, anomaly_flag = adapter.get_session_id(log_msg=logs)
+    sess_id, anomaly_flag = adapter.get_session_id(log=logs)
     # Verify the result correspond to what we expect
     assert sess_id == expected
     # The flag indicator of the anomalous nature of the sessions must be a

@@ -2,7 +2,7 @@ from drain3 import TemplateMiner
 import json
 import os
 import sys
-from deeplog_trainer.log_parser.adapter import BatrasioAdapter
+from deeplog_trainer.log_parser.adapter import SessionAdapter
 from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
 import re
@@ -16,21 +16,27 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 def run_drain(logger, input_file, output_path):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     with open(os.path.join(root_path, input_file), 'r') as f:
-        adapter = BatrasioAdapter()
+        adapter = SessionAdapter(logformat='<Pid>  <Content>',
+                                 delimiter='TCP source connection created',
+                                 anomaly_labels=['TCP source SSL error',
+                                                 'TCP source socket error'],
+                                 regex=r"^(\d+)")
         template_miner = TemplateMiner()
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
         line_count = 0
         for line in f:
-            sess_id, anomaly_flag = adapter.get_session_id(log_msg=line)
-            procid = re.search(r"^(\d+)", line)[0]
-            content = line.split(procid)[1].strip()
-            drain_result = drain.add_message(content)
-            sessions = session_storage.get_sessions(sess_id,
-                                                    drain_result['template_id'])
-            templates = session_storage.get_templates \
-                (drain_result['template_id'], drain_result['template'])
+            print(line)
+            sess_id, anomaly_flag = adapter.get_session_id(log=line)
+            headers, regex = adapter.generate_logformat_regex()
+            match = regex.search(line.strip())
+            message = match.group('Content')
+            drain_result = drain.add_message(message)
+            sessions = session_storage.get_sessions(
+                sess_id, drain_result['template_id'])
+            templates = session_storage.get_templates(
+                drain_result['template_id'], drain_result['template'])
             parameters = session_storage.get_parameters(sess_id,
                                                         drain_result['params'])
             line_count += 1
