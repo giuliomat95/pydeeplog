@@ -1,6 +1,5 @@
 from deeplog_trainer.log_parser.adapter import SessionAdapter
 import pytest
-import pdb
 
 
 @pytest.fixture(scope='session')
@@ -11,7 +10,6 @@ def batrasio_adapter():
                                           'TCP source socket error'],
                           regex=r"^(\d+)")
 
-
 def get_batrasio_data():
     expected_sess_id = [1, 1, 1, 2, 2, 2, 2, 3, 2, 3, 3, 3, 3]
     expected_anomaly_flag = [False, False, False, False, False, True, True,
@@ -19,7 +17,6 @@ def get_batrasio_data():
     with open('data/sample_test_batrasio.log') as f:
         for i, line in enumerate(f):
             yield line.strip(), expected_sess_id[i], expected_anomaly_flag[i]
-
 
 @pytest.mark.parametrize("logs, expected_sess_id, expected_anomaly_flag",
                          get_batrasio_data())
@@ -32,13 +29,11 @@ def test_batrasio_sessions(logs, expected_sess_id, expected_anomaly_flag,
     # boolean
     assert anomaly_flag[sess_id] == expected_anomaly_flag
 
-
 @pytest.fixture(scope='session')
 def hdfs_adapter():
     return SessionAdapter(logformat='<Date> <Time> <Pid> <Level> '
                                     '<Component>: <Content>',
                           regex=r'blk_-?\d+')
-
 
 def get_hdfs_data():
     expected_sess_id = [1, 1, 2, 2, 2, 1, 1, 2, 3, 4, 1, 4, 3, 3, 3]
@@ -50,7 +45,6 @@ def get_hdfs_data():
         for i, line in enumerate(f):
             yield line.strip(), expected_sess_id[i], expected_block_ids
 
-
 @pytest.mark.parametrize("logs, expected_sess_id, expected_block_ids",
                          get_hdfs_data())
 def test_hdfs_sessions(logs, expected_sess_id, expected_block_ids,
@@ -60,14 +54,12 @@ def test_hdfs_sessions(logs, expected_sess_id, expected_block_ids,
     assert sess_id == expected_sess_id
     assert set(hdfs_adapter.d.keys()).issubset(expected_block_ids)
 
-
 @pytest.fixture(scope='session')
 def no_procid_adapter():
     return SessionAdapter(logformat='<Content>',
                           delimiter='TCP source connection created',
                           anomaly_labels=['TCP source SSL error',
                                           'TCP source socket error'])
-
 
 def get_no_procid_data():
     expected_sess_id = [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2]
@@ -76,7 +68,6 @@ def get_no_procid_data():
     with open('data/sample_test_no_procid.log') as f:
         for i, line in enumerate(f):
             yield line.strip(), expected_sess_id[i], expected_anomaly_flag[i]
-
 
 @pytest.mark.parametrize("logs, expected_sess_id, expected_anomaly_flag",
                          get_no_procid_data())
@@ -87,19 +78,16 @@ def test_no_procid_sessions(logs, expected_sess_id, expected_anomaly_flag,
     assert sess_id == expected_sess_id
     assert anomaly_flag[sess_id] == expected_anomaly_flag
 
-
 @pytest.fixture(scope='session')
 def box_unix_adapter():
     return SessionAdapter(logformat='<Date> <Time>, <Content>',
                           time_format='%H:%M:%S.%f', delta={'milliseconds': 2})
-
 
 def get_box_unix_data():
     expected_sess_id = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5, 5, 5, 5, 6]
     with open('data/sample_test_box_unix.log') as f:
         for i, line in enumerate(f):
             yield line.strip(), expected_sess_id[i]
-
 
 @pytest.mark.parametrize("logs, expected_sess_id", get_box_unix_data())
 def test_box_unix_sessions(logs, expected_sess_id, box_unix_adapter):
