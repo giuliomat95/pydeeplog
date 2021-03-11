@@ -22,7 +22,6 @@ def run_drain(logger, input_file, output_path):
                                                  'TCP source socket error'],
                                  regex=r"^(\d+)")
         template_miner = TemplateMiner()
-        print(template_miner.config.get('DRAIN', 'sim_th'))
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
