@@ -4,7 +4,7 @@ from datetime import timedelta
 
 
 class SessionAdapter:
-    def __init__(self, logformat, delimiter: str = None,
+    def __init__(self, logformat: str, delimiter: str = None,
                  anomaly_labels: [] = None, regex=None, time_format: str = None,
                  delta: dict = None):
         """
@@ -13,11 +13,11 @@ class SessionAdapter:
         :param delimiter: If necessary, the string sentence that calls a new
         session.
         :param anomaly_labels: list with the strings leading to an anomaly
-        :param regex: The session identifier in regex format. For example, it
-        could be the id of a particular process.
+        :param regex: The session identifier in format “r-string”. For example,
+        it could be the id of a particular process.
         :param time_format: If the sessions needs to be grouped calculating the
         time elapsed between the entry log and the previous one, set the format
-        of time. Example: HH:MM:SS.
+        of time. Example: '%H:%M:%S.%f'.
         :param delta: dictionary indicating the time that must elapse to create
         a new session. Example: {'minutes'=1, 'seconds'=30}
         """
@@ -30,6 +30,7 @@ class SessionAdapter:
         self.logformat = logformat
         self.delta = delta
         self.time_format = time_format
+        self.starter_time = 0
         # Content word must be in logformat to isolate the log part to be parsed
         # by Drain
         assert 'Content' in logformat
@@ -44,48 +45,57 @@ class SessionAdapter:
             identifier = re.search(self.regex, log)[0]
             if identifier not in self.d.keys():
                 self.d[identifier] = self.last_session_id + 1
-                self.anomaly_flag[self.d[identifier]] = False
+                if self.anomaly_labels:
+                    self.anomaly_flag[self.d[identifier]] = False
                 if not self.delimiter:
                     self.last_session_id += 1
             if self.delimiter and self.delimiter in log:
                 self.d[identifier] = self.last_session_id + 1
                 self.last_session_id += 1
-                self.anomaly_flag[self.d[identifier]] = False
-            if not self.anomaly_flag[self.d[identifier]]:
+                if self.anomaly_labels:
+                    self.anomaly_flag[self.d[identifier]] = False
+            if self.anomaly_labels and not self.anomaly_flag[self.d[identifier]
+            ]:
                 self.anomaly_flag[self.d[identifier]] = any(anomaly_label in log
                                                             for anomaly_label in
                                                             self.anomaly_labels)
             return self.d[identifier], self.anomaly_flag
         elif self.delta:
             assert 'Time' in self.logformat
-            starter_time = 0
             delta = timedelta(**self.delta)
             headers, regex = self.generate_logformat_regex()
             match = regex.search(log.strip())
             time = match.group('Time')
-            if not starter_time:
-                starter_time = time
+            if not self.starter_time:
+                self.starter_time = time
+                self.last_session_id = 1
             elapsed_time = \
-                datetime.strptime(time, self.time_format)-datetime.strptime(
-                    starter_time, self.time_format)
-            if elapsed_time > delta:
+                datetime.strptime(time, self.time_format) - datetime.strptime(
+                    self.starter_time, self.time_format)
+            if elapsed_time >= delta:
                 self.last_session_id += 1
-                self.anomaly_flag[self.last_session_id] = False
-            if not self.anomaly_flag[self.last_session_id]:
+                self.starter_time = time
+                if self.anomaly_labels:
+                    self.anomaly_flag[self.last_session_id] = False
+            if self.anomaly_labels and not self.anomaly_flag[
+                self.last_session_id
+            ]:
                 self.anomaly_flag[self.last_session_id] = \
                     any(anomaly_label in log for anomaly_label in
                         self.anomaly_labels)
-            return self.last_session_id
+            return self.last_session_id, self.anomaly_flag
         elif not self.regex:
-            # If no identifier set him to default value of 0
             if self.delimiter in log:
                 self.last_session_id += 1
-                self.anomaly_flag[self.last_session_id] = False
-            if not self.anomaly_flag[self.last_session_id]:
+                if self.anomaly_labels:
+                    self.anomaly_flag[self.last_session_id] = False
+            if self.anomaly_labels and not self.anomaly_flag[
+                self.last_session_id
+            ]:
                 self.anomaly_flag[self.last_session_id] = \
                     any(anomaly_label in log for anomaly_label in
                         self.anomaly_labels)
-            return self.last_session_id
+            return self.last_session_id, self.anomaly_flag
         else:
             raise Exception('Error')
 

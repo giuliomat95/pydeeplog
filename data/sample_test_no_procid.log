@@ -1,0 +1,13 @@
+server=0.0.0.0, connector=null, client=172.17.1.41:57054: TCP source connection created
+ connector=2080076, kind=proto-piped-N[?], path=172.17.1.41:57054<->172.17.0.120:1515<=>null<->null, protos=gzip,ntf: : Event protocol found
+server=0.0.0.0, source=172.17.1.41:57054: Plain source connection
+ dir=undefined, target=172.17.12.131, connector=2080076, subconnector=2080079, local=172.17.0.120:32930: : Closing mono target connection
+connector=2080076: Closing multi target domain connection
+server=0.0.0.0, connector=2080076, client=172.17.1.41:57054: TCP source socket end
+connector=2080078, kind=unpiped, path=172.17.1.41:57054<->172.17.0.120:1515<=>172.17.0.120:32930<->172.17.12.154:1515: Connector closed
+Multi target domain connection created
+server=0.0.0.0, source=172.17.1.41:57558: Plain source connection
+server=0.0.0.0, connector=null, client=172.17.1.41:57558: TCP source connection created
+ connector=2080080, kind=proto-piped-N[?], path=172.17.1.41:57558<->172.17.0.120:1515<=>null<->null, protos=: , : Connector created
+dir=undefined, target=172.17.12.107, connector=2080080, subconnector=null, local=172.17.0.120:45923: : Mono target connection created
+connector=2080082, kind=unpiped, path=172.17.1.41:57558<->172.17.0.120:1515<=>172.17.0.120:45923<->172.17.12.107:1515, : Connector created
