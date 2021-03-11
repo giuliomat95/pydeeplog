@@ -23,10 +23,24 @@ The state-of-the-art log parsing method is represented by Drain, a Depth-Tree
 based online log parsing method. For further details: 
 https://pinjiahe.github.io/papers/ICWS17.pdf. \
 Once that logs are parsed, each of them is encoded with the respective log key 
-id and grouped in different "sessions". 
-In particular, a new group is created every time the content of the log message 
-is "TCP source connection created", and it contains all the logs until a new 
-message with the same starting delimiter come in. 
+id and grouped in different "sessions". \
+In this project we have  used the open source implementation 
+[Drain3](https://github.com/IBM/Drain3).
+
+####Configuration
+Drain3 is configured using [configparser](https://docs.python.org/3.4/library/configparser.html). 
+Config filename is `drain3.ini` in working directory.   
+
+Available parameters are:
+
+- `[DRAIN]/sim_th` - similarity threshold (default 0.4)
+- `[DRAIN]/depth` - depth of all leaf nodes (default 4)
+- `[DRAIN]/max_children` - max number of children of an internal node (default 100)
+- `[DRAIN]/extra_delimiters` - delimiters to apply when splitting log message into words (in addition to whitespace) (default none).
+    Format is a Python list e.g. `['_', ':']`.
+- `[MASKING]/masking` - parameters masking - in json format (default "")
+- `[SNAPSHOT]/snapshot_interval_minutes` - time interval for new snapshots (default 1)
+- `[SNAPSHOT]/compress_state` - whether to compress the state before saving it. This can be useful when using Kafka persistence. 
 
 ### Log key anomaly detection model
 

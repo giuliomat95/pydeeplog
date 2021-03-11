@@ -5,10 +5,10 @@ import sys
 from deeplog_trainer.log_parser.adapter import SessionAdapter
 from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
-import re
 import logging
 import argparse
 import pickle
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
@@ -22,12 +22,12 @@ def run_drain(logger, input_file, output_path):
                                                  'TCP source socket error'],
                                  regex=r"^(\d+)")
         template_miner = TemplateMiner()
+        print(template_miner.config.get('DRAIN', 'sim_th'))
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
         line_count = 0
         for line in f:
-            print(line)
             sess_id, anomaly_flag = adapter.get_session_id(log=line)
             headers, regex = adapter.generate_logformat_regex()
             match = regex.search(line.strip())
