@@ -31,9 +31,15 @@ class SessionAdapter:
         self.delta = delta
         self.time_format = time_format
         self.starter_time = 0
-        # Content word must be in logformat to isolate the log part to be parsed
-        # by Drain
+        # 'Content' word must be in logformat variable to isolate the log part
+        # to be parsed by Drain
         assert 'Content' in logformat
+        # If the sessions are going to be created by calculating the time
+        # elapsed between an entry log an another, the dataset must include the
+        # entry time of each log and the word 'Time' must be in logformat
+        # variable
+        if self.delta:
+            assert 'Time' in self.logformat
 
     def get_session_id(self, log: str):
         """
@@ -61,7 +67,6 @@ class SessionAdapter:
                                                             self.anomaly_labels)
             return self.d[identifier], self.anomaly_flag
         elif self.delta:
-            assert 'Time' in self.logformat
             delta = timedelta(**self.delta)
             headers, regex = self.generate_logformat_regex()
             match = regex.search(log.strip())

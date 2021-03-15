@@ -27,9 +27,10 @@ def get_data():
 def test_dict(logs, setup):
     adapter, drain, session_storage = setup
     sess_id, anomaly_flag = adapter.get_session_id(log=logs)
-    procid = re.search(r"^(\d+)", logs)[0]
-    content = logs.split(procid)[1].strip()
-    drain_result = drain.add_message(content)
+    headers, regex = adapter.generate_logformat_regex()
+    match = regex.search(logs.strip())
+    message = match.group('Content')
+    drain_result = drain.add_message(message)
     sessions = session_storage.get_sessions(
         sess_id, drain_result['template_id'])
     parameters = session_storage.get_parameters(sess_id, drain_result['params'])
