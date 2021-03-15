@@ -2,7 +2,7 @@ from drain3 import TemplateMiner
 import json
 import os
 import sys
-from deeplog_trainer.log_parser.adapter import SessionAdapter
+from deeplog_trainer.log_parser.adapter import AdapterFactory, ParseMethods
 from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
 import logging
@@ -16,11 +16,12 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 def run_drain(logger, input_file, output_path):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     with open(os.path.join(root_path, input_file), 'r') as f:
-        adapter = SessionAdapter(logformat='<Pid>  <Content>',
-                                 delimiter='TCP source connection created',
-                                 anomaly_labels=['TCP source SSL error',
-                                                 'TCP source socket error'],
-                                 regex=r"^(\d+)")
+        adapter_factory = AdapterFactory()
+        adapter = adapter_factory.instantiate_product(
+            adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
+            delimiter='TCP source connection created',
+            anomaly_labels=['TCP source SSL error', 'TCP source socket error'],
+            regex=r"^(\d+)")
         template_miner = TemplateMiner()
         drain = Drain(template_miner)
         session_storage = SessionStorage()
@@ -28,7 +29,8 @@ def run_drain(logger, input_file, output_path):
         line_count = 0
         for line in f:
             sess_id, anomaly_flag = adapter.get_session_id(log=line)
-            headers, regex = adapter.generate_logformat_regex()
+            headers, regex = ParseMethods.generate_logformat_regex(
+                logformat='<Pid>  <Content>')
             match = regex.search(line.strip())
             message = match.group('Content')
             drain_result = drain.add_message(message)

@@ -1,22 +1,23 @@
-from deeplog_trainer.log_parser.adapter import SessionAdapter
+from deeplog_trainer.log_parser.adapter import AdapterFactory, ParseMethods
 from drain3 import TemplateMiner
 from deeplog_trainer.log_parser.drain import Drain
 from deeplog_trainer.log_parser.sessions import SessionStorage
 import pytest
-import re
 
 
 @pytest.fixture(scope='session')
 def setup():
-    adapter = SessionAdapter(logformat='<Pid>  <Content>',
-                             delimiter='TCP source connection created',
-                             anomaly_labels=['TCP source SSL error',
-                                             'TCP source socket error'],
-                             regex=r"^(\d+)")
+    adapter_factory = AdapterFactory()
+    adapter = adapter_factory.instantiate_product(
+        adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
+        delimiter='TCP source connection created',
+        anomaly_labels=['TCP source SSL error', 'TCP source socket error'],
+        regex=r"^(\d+)")
+    logformat = '<Pid>  <Content>'
     template_miner = TemplateMiner()
     drain = Drain(template_miner)
     session_storage = SessionStorage()
-    return adapter, drain, session_storage
+    return adapter, logformat, drain, session_storage
 
 def get_data():
     with open('data/sample_test_batrasio.log') as f:
@@ -25,9 +26,9 @@ def get_data():
 
 @pytest.mark.parametrize("logs", get_data())
 def test_dict(logs, setup):
-    adapter, drain, session_storage = setup
+    adapter, logformat, drain, session_storage = setup
     sess_id, anomaly_flag = adapter.get_session_id(log=logs)
-    headers, regex = adapter.generate_logformat_regex()
+    headers, regex = ParseMethods.generate_logformat_regex(logformat)
     match = regex.search(logs.strip())
     message = match.group('Content')
     drain_result = drain.add_message(message)
