@@ -5,20 +5,24 @@ from abc import ABCMeta, abstractmethod
 
 
 class SessionAdapterInterface(metaclass=ABCMeta):
-    """Abstract Sessions Factory Interface"""
+    """Abstract Sessions Interface"""
 
     @staticmethod
     @abstractmethod
     def get_session_id(log: str):
         """
-        The static Abstract factory interface method: given the log message,
+        The static Abstract interface method: given the log message,
         returns the corresponding session Id it belongs to
         """
         pass
 
 
 class OnlyIdentifier(SessionAdapterInterface):
-    """A Concrete Class that implements the SessionAdapter interface"""
+    """
+    This Class implements the SessionAdapter interface in the case only an
+    identifier in regex format is provided in order to group the logs in
+    different sessions
+    """
 
     def __init__(self, regex, anomaly_labels: [] = None):
         """
@@ -31,13 +35,11 @@ class OnlyIdentifier(SessionAdapterInterface):
         self.d = {}
         self.last_session_id = 0
         self.anomaly_flag = {}
-        # 'Content' word must be in logformat variable to isolate the log part
-        # to be parsed by Drain
 
     def get_session_id(self, log: str):
-        log = log.rstrip()
+        log = log.strip()
         identifier = re.search(self.regex, log)[0]
-        if identifier not in self.d.keys():
+        if identifier not in self.d:
             self.d[identifier] = self.last_session_id + 1
             self.last_session_id += 1
             if self.anomaly_labels:
@@ -50,7 +52,11 @@ class OnlyIdentifier(SessionAdapterInterface):
 
 
 class IdentifierAndDelimiter(SessionAdapterInterface):
-    """A Concrete Class that implements the SessionAdapter interface"""
+    """
+    This Class implements the SessionAdapter interface in the case, in order to
+    group the logs in different sessions, both an identifier in regex format and
+    a delimiter string are provided.
+    """
 
     def __init__(self, regex, delimiter: str, anomaly_labels: [] = None):
         """
@@ -67,11 +73,10 @@ class IdentifierAndDelimiter(SessionAdapterInterface):
 
         self.anomaly_labels = anomaly_labels
 
-
     def get_session_id(self, log: str):
-        log = log.rstrip()
+        log = log.strip()
         identifier = re.search(self.regex, log)[0]
-        if identifier not in self.d.keys():
+        if identifier not in self.d:
             self.d[identifier] = self.last_session_id + 1
             if self.anomaly_labels:
                 self.anomaly_flag[self.d[identifier]] = False
@@ -88,7 +93,11 @@ class IdentifierAndDelimiter(SessionAdapterInterface):
 
 
 class OnlyDelimiter(SessionAdapterInterface):
-    """A Concrete Class that implements the SessionAdapter interface"""
+    """
+    This Class implements the SessionAdapter interface in the case,
+    in order to group the logs in different sessions, only a delimiter string is
+    provided
+    """
 
     def __init__(self, delimiter: str, anomaly_labels: [] = None):
         """
@@ -101,7 +110,7 @@ class OnlyDelimiter(SessionAdapterInterface):
         self.anomaly_labels = anomaly_labels
 
     def get_session_id(self, log: str):
-        log = log.rstrip()
+        log = log.strip()
         if self.delimiter in log:
             self.last_session_id += 1
             if self.anomaly_labels:
@@ -114,7 +123,12 @@ class OnlyDelimiter(SessionAdapterInterface):
 
 
 class TimeInterval(SessionAdapterInterface):
-    """A Concrete Class that implements the SessionAdapter interface"""
+    """
+    This Class implements the SessionAdapter interface in the case, in order to
+    group the logs in different sessions, the system entry time of each log is
+    provided. In particular, a new session is created every time the time
+    elapsed is bigger of a fixed time interval (provided by the user as well).
+    """
 
     def __init__(self, logformat, time_format: str, delta: dict,
                  anomaly_labels: [] = None):
@@ -128,7 +142,9 @@ class TimeInterval(SessionAdapterInterface):
         :param anomaly_labels: List with the strings leading to an anomaly.
         """
         self.logformat = logformat
-        assert 'Time' in self.logformat
+        if 'Time' not in self.logformat:
+            raise Exception('The logformat must contain the word `Time` in'
+                            'order to identify the entry time of the logs')
         self.last_session_id = 0
         self.anomaly_flag = {}
         self.delta = delta
@@ -167,12 +183,13 @@ class ParseMethods:
 
     @staticmethod
     def generate_logformat_regex(logformat):
-        """
-        Function to generate regular expression to split log messages
-        """
+        """Function to generate regular expression to split log messages"""
         # 'Content' word must be in logformat variable to isolate the log part
         # to be parsed by Drain
-        assert 'Content' in logformat
+        if 'Content' not in logformat:
+            raise Exception('The logformat must contain the word `Content` in'
+                            'order to isolate the log part to be parsed by '
+                            'Drain')
         headers = []
         splitters = re.split(r'(<[^<>]+>)', logformat)
         regex = ''
@@ -195,7 +212,7 @@ class AdapterFactory:
     ADAPTER_TYPE_REGEX = 'only_identifier'
     ADAPTER_TYPE_INTERVAL_TIME = 'interval_time'
 
-    def instantiate_product(self, adapter_type: str, **kwargs):
+    def build_adapter(self, adapter_type: str, **kwargs):
         try:
             if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER:
                 self._validate_delimiter_kwargs(kwargs)
@@ -215,11 +232,11 @@ class AdapterFactory:
         return None
 
     def _validate_delimiter_kwargs(self, kwargs):
-        if not 'delimiter' in kwargs:
+        if 'delimiter' not in kwargs:
             raise ValueError('Provide right parameters')
 
     def _validate_regex_kwargs(self, kwargs):
-        if not 'regex' in kwargs:
+        if 'regex' not in kwargs:
             raise ValueError('Provide right parameters')
 
     def _validate_regex_and_delimiter_kwargs(self, kwargs):

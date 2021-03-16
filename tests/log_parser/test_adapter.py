@@ -5,7 +5,7 @@ import pytest
 @pytest.fixture(scope='session')
 def batrasio_adapter():
     adapter_factory = AdapterFactory()
-    return adapter_factory.instantiate_product(
+    return adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
         delimiter='TCP source connection created',
         anomaly_labels=['TCP source SSL error', 'TCP source socket error'],
@@ -33,7 +33,7 @@ def test_batrasio_sessions(logs, expected_sess_id, expected_anomaly_flag,
 @pytest.fixture(scope='session')
 def hdfs_adapter():
     adapter_factory = AdapterFactory()
-    return adapter_factory.instantiate_product(
+    return adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_REGEX,
         regex=r'blk_-?\d+')
 
@@ -59,7 +59,7 @@ def test_hdfs_sessions(logs, expected_sess_id, expected_block_ids,
 @pytest.fixture(scope='session')
 def only_delimiter_adapter():
     adapter_factory = AdapterFactory()
-    return adapter_factory.instantiate_product(
+    return adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER,
         delimiter='TCP source connection created',
         anomaly_labels=['TCP source SSL error', 'TCP source socket error'])
@@ -84,7 +84,7 @@ def test_no_procid_sessions(logs, expected_sess_id, expected_anomaly_flag,
 @pytest.fixture(scope='session')
 def box_unix_adapter():
     adapter_factory = AdapterFactory()
-    return adapter_factory.instantiate_product(
+    return adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME,
         logformat='<Date> <Time>, <Content>',
         time_format='%H:%M:%S.%f',

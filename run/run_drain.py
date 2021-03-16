@@ -17,7 +17,7 @@ def run_drain(logger, input_file, output_path):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     with open(os.path.join(root_path, input_file), 'r') as f:
         adapter_factory = AdapterFactory()
-        adapter = adapter_factory.instantiate_product(
+        adapter = adapter_factory.build_adapter(
             adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
             delimiter='TCP source connection created',
             anomaly_labels=['TCP source SSL error', 'TCP source socket error'],

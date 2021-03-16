@@ -8,7 +8,7 @@ import pytest
 @pytest.fixture(scope='session')
 def setup():
     adapter_factory = AdapterFactory()
-    adapter = adapter_factory.instantiate_product(
+    adapter = adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
         delimiter='TCP source connection created',
         anomaly_labels=['TCP source SSL error', 'TCP source socket error'],
