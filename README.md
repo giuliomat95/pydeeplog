@@ -27,7 +27,7 @@ id and grouped in different "sessions". \
 In this project we have  used the open source implementation 
 [Drain3](https://github.com/IBM/Drain3).
 
-####Configuration
+#### Configuration
 Drain3 is configured using [configparser](https://docs.python.org/3.4/library/configparser.html). 
 Config filename is `drain3.ini` in working directory.   
 

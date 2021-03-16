@@ -7,12 +7,11 @@ from abc import ABCMeta, abstractmethod
 class SessionAdapterInterface(metaclass=ABCMeta):
     """Abstract Sessions Interface"""
 
-    @staticmethod
     @abstractmethod
-    def get_session_id(log: str):
+    def get_session_id(self, log: str):
         """
-        The static Abstract interface method: given the log message,
-        returns the corresponding session Id it belongs to
+        The interface method: given the log message,
+        returns the corresponding session Id it belongs to.
         """
         pass
 
@@ -24,12 +23,14 @@ class OnlyIdentifier(SessionAdapterInterface):
     different sessions
     """
 
-    def __init__(self, regex, anomaly_labels: [] = None):
+    def __init__(self, regex, anomaly_labels=None):
         """
         :param regex: The session identifier in format “r-string”. For example,
         it could be the id of a particular process.
         :param anomaly_labels: List with the strings leading to an anomaly
         """
+        if anomaly_labels is None:
+            anomaly_labels = []
         self.regex = regex
         self.anomaly_labels = anomaly_labels
         self.d = {}
@@ -58,19 +59,20 @@ class IdentifierAndDelimiter(SessionAdapterInterface):
     a delimiter string are provided.
     """
 
-    def __init__(self, regex, delimiter: str, anomaly_labels: [] = None):
+    def __init__(self, regex, delimiter: str, anomaly_labels=None):
         """
         :param regex: The identifier in format “r-string”. For example,
         it could be the id of a particular process.
         :param delimiter: The string sentence that calls a new session.
         :param anomaly_labels:  List with the strings leading to an anomaly
         """
+        if anomaly_labels is None:
+            anomaly_labels = []
         self.regex = regex
         self.delimiter = delimiter
         self.d = {}
         self.last_session_id = 0
         self.anomaly_flag = {}
-
         self.anomaly_labels = anomaly_labels
 
     def get_session_id(self, log: str):
@@ -99,11 +101,13 @@ class OnlyDelimiter(SessionAdapterInterface):
     provided
     """
 
-    def __init__(self, delimiter: str, anomaly_labels: [] = None):
+    def __init__(self, delimiter: str, anomaly_labels=None):
         """
         :param delimiter: The string sentence that calls a new session.
         :param anomaly_labels: List with the strings leading to an anomaly
         """
+        if anomaly_labels is None:
+            anomaly_labels = []
         self.last_session_id = 0
         self.anomaly_flag = {}
         self.delimiter = delimiter
@@ -131,7 +135,7 @@ class TimeInterval(SessionAdapterInterface):
     """
 
     def __init__(self, logformat, time_format: str, delta: dict,
-                 anomaly_labels: [] = None):
+                 anomaly_labels=None):
         """
         :param logformat: Format of the entry log. The variable must contain the
         word 'Time' to calculate the time interval between the entry log and
@@ -141,6 +145,8 @@ class TimeInterval(SessionAdapterInterface):
         a new session. Example: {'minutes'=1, 'seconds'=30}
         :param anomaly_labels: List with the strings leading to an anomaly.
         """
+        if anomaly_labels is None:
+            anomaly_labels = []
         self.logformat = logformat
         if 'Time' not in self.logformat:
             raise Exception('The logformat must contain the word `Time` in'
@@ -178,12 +184,20 @@ class TimeInterval(SessionAdapterInterface):
 
 
 class ParseMethods:
+
     def __init__(self):
         pass
 
     @staticmethod
     def generate_logformat_regex(logformat):
-        """Function to generate regular expression to split log messages"""
+        """
+        This method allows to split the log messages in different parts. For
+        example, it is fundamental to isolate only the content part of the log
+        to send to Drain.
+        In particular, given the format of the log, for example
+        '<Pid> <Content>', it outputs the headers (['Pid', 'Content']), and the
+        relative regex generated.
+        """
         # 'Content' word must be in logformat variable to isolate the log part
         # to be parsed by Drain
         if 'Content' not in logformat:
@@ -213,23 +227,19 @@ class AdapterFactory:
     ADAPTER_TYPE_INTERVAL_TIME = 'interval_time'
 
     def build_adapter(self, adapter_type: str, **kwargs):
-        try:
-            if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER:
-                self._validate_delimiter_kwargs(kwargs)
-                return OnlyDelimiter(**kwargs)
-            if adapter_type == AdapterFactory.ADAPTER_TYPE_REGEX:
-                self._validate_regex_kwargs(kwargs)
-                return OnlyIdentifier(**kwargs)
-            if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX:
-                self._validate_regex_and_delimiter_kwargs(kwargs)
-                return IdentifierAndDelimiter(**kwargs)
-            if adapter_type == AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME:
-                self._validate_time_interval_kwargs(kwargs)
-                return TimeInterval(**kwargs)
-            raise Exception('Adapter type not found')
-        except Exception as _e:
-            print(_e)
-        return None
+        if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER:
+            self._validate_delimiter_kwargs(kwargs)
+            return OnlyDelimiter(**kwargs)
+        if adapter_type == AdapterFactory.ADAPTER_TYPE_REGEX:
+            self._validate_regex_kwargs(kwargs)
+            return OnlyIdentifier(**kwargs)
+        if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX:
+            self._validate_regex_and_delimiter_kwargs(kwargs)
+            return IdentifierAndDelimiter(**kwargs)
+        if adapter_type == AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME:
+            self._validate_time_interval_kwargs(kwargs)
+            return TimeInterval(**kwargs)
+        raise Exception('Adapter type not found')
 
     def _validate_delimiter_kwargs(self, kwargs):
         if 'delimiter' not in kwargs:
