@@ -108,9 +108,17 @@ def test_box_unix_sessions(logs, expected_sess_id, box_unix_adapter):
                              {'delimiter': 'TCP source connection created',
                               'anomaly_labels': ['TCP source SSL error',
                                                  'TCP source socket error']},
-                             marks=pytest.mark.xfail(raises=Exception)))])
+                             marks=pytest.mark.xfail(raises=Exception))),
+                          (pytest.param(
+                              AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
+                              {'delimiter': 'TCP source connection created'},
+                              marks=pytest.mark.xfail(raises=ValueError))),
+                          (pytest.param(
+                              AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME,
+                              {'logformat': '<Date>, <Content>',
+                               'time_format': '%H:%M:%S.%f',
+                               'delta': {'milliseconds': 2}},
+                              marks=pytest.mark.xfail(raises=Exception)))])
 def test_exceptions(adapter_type, kwargs):
     adapter_factory = AdapterFactory()
     adapter_factory.build_adapter(adapter_type, **kwargs)
-
-
