@@ -24,11 +24,11 @@ def get_batrasio_data():
 def test_batrasio_sessions(logs, expected_sess_id, expected_anomaly_flag,
                            batrasio_adapter):
     sess_id, anomaly_flag = batrasio_adapter.get_session_id(log=logs)
-    # Verify the result correspond to what we expect
     assert sess_id == expected_sess_id
     # The flag indicator of the anomalous nature of the sessions must be a
     # boolean
     assert anomaly_flag[sess_id] == expected_anomaly_flag
+
 
 @pytest.fixture(scope='session')
 def hdfs_adapter():
@@ -52,9 +52,9 @@ def get_hdfs_data():
 def test_hdfs_sessions(logs, expected_sess_id, expected_block_ids,
                        hdfs_adapter):
     sess_id, anomaly_flag = hdfs_adapter.get_session_id(log=logs)
-    # Verify the result correspond to what we expect
     assert sess_id == expected_sess_id
     assert set(hdfs_adapter.d.keys()).issubset(expected_block_ids)
+
 
 @pytest.fixture(scope='session')
 def only_delimiter_adapter():
@@ -77,9 +77,9 @@ def get_no_procid_data():
 def test_no_procid_sessions(logs, expected_sess_id, expected_anomaly_flag,
                             only_delimiter_adapter):
     sess_id, anomaly_flag = only_delimiter_adapter.get_session_id(log=logs)
-    # Verify the result correspond to what we expect
     assert sess_id == expected_sess_id
     assert anomaly_flag[sess_id] == expected_anomaly_flag
+
 
 @pytest.fixture(scope='session')
 def box_unix_adapter():
@@ -99,5 +99,18 @@ def get_box_unix_data():
 @pytest.mark.parametrize("logs, expected_sess_id", get_box_unix_data())
 def test_box_unix_sessions(logs, expected_sess_id, box_unix_adapter):
     sess_id, anomaly_flag = box_unix_adapter.get_session_id(log=logs)
-    # Verify the result correspond to what we expect
     assert sess_id == expected_sess_id
+
+
+@pytest.mark.parametrize("adapter_type, kwargs",
+                         [(pytest.param(
+                             'unknown adapter',
+                             {'delimiter': 'TCP source connection created',
+                              'anomaly_labels': ['TCP source SSL error',
+                                                 'TCP source socket error']},
+                             marks=pytest.mark.xfail(raises=Exception)))])
+def test_exceptions(adapter_type, kwargs):
+    adapter_factory = AdapterFactory()
+    adapter_factory.build_adapter(adapter_type, **kwargs)
+
+

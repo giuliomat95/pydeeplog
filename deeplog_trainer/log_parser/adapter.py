@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class SessionAdapterInterface(metaclass=ABCMeta):
-    """Abstract Sessions Interface"""
+    """Adapter Sessions Interface"""
 
     @abstractmethod
     def get_session_id(self, log: str):

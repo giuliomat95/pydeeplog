@@ -8,7 +8,7 @@ from deeplog_trainer.log_parser.drain import Drain
 import logging
 import argparse
 import pickle
-
+import re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
@@ -16,13 +16,13 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 def run_drain(logger, input_file, output_path):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     with open(os.path.join(root_path, input_file), 'r') as f:
-        adapter_factory = AdapterFactory()
-        adapter = adapter_factory.build_adapter(
-            adapter_type=AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
-            delimiter='TCP source connection created',
-            anomaly_labels=['TCP source SSL error', 'TCP source socket error'],
-            regex=r"^(\d+)")
         template_miner = TemplateMiner()
+        adapter_factory = AdapterFactory()
+        print(json.loads(template_miner.config.get('ADAPTER_PARAMS',
+                                                   'adapter_params')))
+        adapter_params = json.loads(template_miner.config.get('ADAPTER_PARAMS',
+                                                              'adapter_params'))
+        adapter = adapter_factory.build_adapter(**adapter_params)
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
@@ -49,7 +49,7 @@ def run_drain(logger, input_file, output_path):
     for sess_id in sessions:
         result['data'].append(dict(template_seq=sessions[sess_id],
                                    template_params=parameters[sess_id],
-                                   is_normal=anomaly_flag[sess_id],
+                                   is_abnormal=anomaly_flag[sess_id],
                                    session_id=sess_id))
 
     with open(os.path.join(output_path, 'data.json'), 'w') as f:
