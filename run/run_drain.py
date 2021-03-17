@@ -8,7 +8,8 @@ from deeplog_trainer.log_parser.drain import Drain
 import logging
 import argparse
 import pickle
-import re
+import ast
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
@@ -18,11 +19,13 @@ def run_drain(logger, input_file, output_path):
     with open(os.path.join(root_path, input_file), 'r') as f:
         template_miner = TemplateMiner()
         adapter_factory = AdapterFactory()
-        print(json.loads(template_miner.config.get('ADAPTER_PARAMS',
-                                                   'adapter_params')))
-        adapter_params = json.loads(template_miner.config.get('ADAPTER_PARAMS',
-                                                              'adapter_params'))
-        adapter = adapter_factory.build_adapter(**adapter_params)
+        anomaly_labels = template_miner.config.get('ANOMALY_LABELS',
+                                                   'anomaly_labels',
+                                                   fallback="[]")
+        anomaly_labels = ast.literal_eval(anomaly_labels)
+        adapter_params = template_miner.config['ADAPTER_PARAMS']
+        adapter = adapter_factory.build_adapter(anomaly_labels=anomaly_labels,
+                                                **adapter_params)
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
