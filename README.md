@@ -156,7 +156,7 @@ The parameters without default values are mandatory to run the file.
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file run/data/data.json \
+python3 -m path.to.script.run.run_model --input_file run/data/data.json \
 --output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
@@ -199,7 +199,7 @@ Execute the command `python3 -m run.run_parameter_detection.py -h` to display
 the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_parameter_detection.py --input_file 
+python3 -m path.to.script.run.run_parameter_detection --input_file 
 run/data/dataset.json --output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
@@ -251,14 +251,14 @@ python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log \
 ```
 + Log Key anomaly detection:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file \
+python3 -m path.to.script.run.run_model --input_file \
 run/batrasio_result/data.json --output_path model_result \
 --output_file model.h5 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 + Parameter value anomaly detection:
 ```sh
-python3 -m path.to.script.run.run_parameter_detection.py --input_file 
+python3 -m path.to.script.run.run_parameter_detection --input_file 
 run/data/dataset.json --output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
