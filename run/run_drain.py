@@ -1,5 +1,5 @@
 from drain3 import TemplateMiner
-import json
+import ast
 import os
 import sys
 from deeplog_trainer.log_parser.adapter import AdapterFactory, ParseMethods
@@ -19,13 +19,13 @@ def run_drain(logger, input_file, output_path):
     with open(os.path.join(root_path, input_file), 'r') as f:
         template_miner = TemplateMiner()
         adapter_factory = AdapterFactory()
-        anomaly_labels = template_miner.config.get('ANOMALY_LABELS',
-                                                   'anomaly_labels',
-                                                   fallback="[]")
-        anomaly_labels = json.loads(anomaly_labels)
-        adapter_params = template_miner.config['ADAPTER_PARAMS']
-        adapter = adapter_factory.build_adapter(anomaly_labels=anomaly_labels,
-                                                **adapter_params)
+        adapter_params = dict(template_miner.config['ADAPTER_PARAMS'])
+        if 'regex' in template_miner.config.options('ADAPTER_PARAMS'):
+            adapter_params['regex'] = ast.literal_eval(adapter_params['regex'])
+        if 'anomaly_labels' in template_miner.config.options('ADAPTER_PARAMS'):
+            adapter_params['anomaly_labels'] = ast.literal_eval(
+                adapter_params['anomaly_labels'])
+        adapter = adapter_factory.build_adapter(**adapter_params)
         drain = Drain(template_miner)
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")

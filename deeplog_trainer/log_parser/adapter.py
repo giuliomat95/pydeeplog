@@ -249,12 +249,10 @@ class AdapterFactory:
     def _validate_regex_kwargs(self, kwargs):
         if 'regex' not in kwargs:
             raise ValueError('Provide right parameters')
-        kwargs['regex'] = ast.literal_eval(kwargs['regex'])
 
     def _validate_regex_and_delimiter_kwargs(self, kwargs):
         if not {'delimiter', 'regex'}.issubset(set(kwargs)):
             raise ValueError('Provide right parameters')
-        kwargs['regex'] = ast.literal_eval(kwargs['regex'])
 
     def _validate_time_interval_kwargs(self, kwargs):
         if not {'logformat', 'time_format', 'delta'}.issubset(set(kwargs)):
