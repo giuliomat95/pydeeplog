@@ -32,7 +32,7 @@ def run_drain(logger, input_file, output_path):
         session_storage = SessionStorage()
         logger.info(f"Drain3 started reading from {args.input_file}")
         line_count = 0
-        logformat = template_miner.config.get('LOGFORMAT', 'logformat')
+        logformat = template_miner.config.get('ADAPTER_PARAMS', 'logformat')
         for line in f:
             sess_id, anomaly_flag = adapter.get_session_id(log=line)
             headers, regex = ParseMethods.generate_logformat_regex(
