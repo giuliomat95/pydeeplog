@@ -25,6 +25,8 @@ def run_drain(logger, input_file, output_path):
         if 'anomaly_labels' in template_miner.config.options('ADAPTER_PARAMS'):
             adapter_params['anomaly_labels'] = ast.literal_eval(
                 adapter_params['anomaly_labels'])
+        if 'delta' in template_miner.config.options('ADAPTER_PARAMS'):
+            adapter_params['delta'] = ast.literal_eval(adapter_params['delta'])
         adapter = adapter_factory.build_adapter(**adapter_params)
         drain = Drain(template_miner)
         session_storage = SessionStorage()
