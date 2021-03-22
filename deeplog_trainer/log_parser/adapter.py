@@ -230,16 +230,24 @@ class AdapterFactory:
     def build_adapter(self, adapter_type: str, **kwargs):
         if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER:
             self._validate_delimiter_kwargs(kwargs)
-            return OnlyDelimiter(**kwargs)
+            return OnlyDelimiter(delimiter=kwargs['delimiter'],
+                                 anomaly_labels=kwargs['anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_REGEX:
             self._validate_regex_kwargs(kwargs)
-            return OnlyIdentifier(**kwargs)
+            return OnlyIdentifier(regex=kwargs['regex'],
+                                  anomaly_labels=kwargs['anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX:
             self._validate_regex_and_delimiter_kwargs(kwargs)
-            return IdentifierAndDelimiter(**kwargs)
+            return IdentifierAndDelimiter(regex=kwargs['regex'],
+                                          delimiter=kwargs['delimiter'],
+                                          anomaly_labels=kwargs[
+                                              'anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME:
             self._validate_time_interval_kwargs(kwargs)
-            return TimeInterval(**kwargs)
+            return TimeInterval(logformat=kwargs['logformat'],
+                                time_format=kwargs['time_format'],
+                                delta=kwargs['delta'],
+                                anomaly_labels=kwargs['anomaly_labels'])
         raise Exception('Adapter type not found')
 
     def _validate_delimiter_kwargs(self, kwargs):

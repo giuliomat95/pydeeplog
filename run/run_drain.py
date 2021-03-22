@@ -20,11 +20,11 @@ def run_drain(logger, input_file, output_path):
         template_miner = TemplateMiner()
         adapter_factory = AdapterFactory()
         adapter_params = dict(template_miner.config['ADAPTER_PARAMS'])
+        adapter_params.setdefault('anomaly_labels', '[]')
+        adapter_params['anomaly_labels'] = ast.literal_eval(
+            adapter_params['anomaly_labels'])
         if 'regex' in template_miner.config.options('ADAPTER_PARAMS'):
             adapter_params['regex'] = ast.literal_eval(adapter_params['regex'])
-        if 'anomaly_labels' in template_miner.config.options('ADAPTER_PARAMS'):
-            adapter_params['anomaly_labels'] = ast.literal_eval(
-                adapter_params['anomaly_labels'])
         if 'delta' in template_miner.config.options('ADAPTER_PARAMS'):
             adapter_params['delta'] = ast.literal_eval(adapter_params['delta'])
         adapter = adapter_factory.build_adapter(**adapter_params)
@@ -52,12 +52,17 @@ def run_drain(logger, input_file, output_path):
         logger.info(f'Finished Drain3 process. Total of lines: {line_count}')
     # Import the results in json format
     result = {'data': []}
-    for sess_id in sessions:
-        result['data'].append(dict(template_seq=sessions[sess_id],
-                                   template_params=parameters[sess_id],
-                                   is_abnormal=anomaly_flag[sess_id],
-                                   session_id=sess_id))
-
+    if anomaly_flag:
+        for sess_id in sessions:
+            result['data'].append(dict(template_seq=sessions[sess_id],
+                                       template_params=parameters[sess_id],
+                                       is_abnormal=anomaly_flag[sess_id],
+                                       session_id=sess_id))
+    else:
+        for sess_id in sessions:
+            result['data'].append(dict(template_seq=sessions[sess_id],
+                                       template_params=parameters[sess_id],
+                                       session_id=sess_id))
     with open(os.path.join(output_path, 'data.json'), 'w') as f:
         json.dump(result, f)
     with open(os.path.join(output_path, 'templates.json'), 'w') as g:
