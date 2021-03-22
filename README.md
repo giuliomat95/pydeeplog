@@ -56,39 +56,6 @@ id and grouped in different "sessions". \
 In this project we have  used the open source implementation 
 [Drain3](https://github.com/IBM/Drain3).
 
-#### Configuration
-Drain3 is configured using 
-[configparser](https://docs.python.org/3.4/library/configparser.html). 
-Config filename is `drain3.ini` in working directory.   
-
-Available parameters are:
-
-- `[DRAIN]/sim_th` - similarity threshold (default 0.4)
-- `[DRAIN]/depth` - depth of all leaf nodes (default 4)
-- `[DRAIN]/max_children` - max number of children of an internal node 
-    (default 100)
-- `[DRAIN]/extra_delimiters` - delimiters to apply when splitting log message 
-    into words (in addition to whitespace) (default none). 
-    Format is a Python list e.g. `['_', ':']`.
-- `[MASKING]/masking` - parameters masking - in json format (default "")
-- `[SNAPSHOT]/snapshot_interval_minutes` - time interval for new snapshots 
-    (default 1)
-- `[SNAPSHOT]/compress_state` - whether to compress the state before saving it.
-    This can be useful when using Kafka persistence. 
-- `[ADAPTER_PARAMS]/adapter_type` - name of the method to be used to group logs
-    in different sessions. Available ones: ['only_delimiter', 'delimiter+regex', 
-    'only_identifier', 'interval_time']. 
-- `[ADAPTER_PARAMS]/delimiter` - string sentence that calls a new session.
-- `[ADAPTER_PARAMS]/regex` - identifier in format “r-string”. For example,
-    it could be the id of a particular process.
-- `[ADAPTER_PARAMS]/anomaly_labels` - list with the strings leading to an 
-    anomaly.    
-- `[ADAPTER_PARAMS]/time_format` - format of time. Example: '%H:%M:%S.%f'.
-- `[ADAPTER_PARAMS]/delta` - dictionary indicating the time that must elapse 
-    to create a new session. Example: {'minutes'=1, 'seconds'=30}
-- `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
-    '\<Pid> \<Content>'. It must contain the word 'Content'.
-
 ### Log key anomaly detection model
 
 Once the numerical representation of each session is ready, DeepLog treats these
@@ -136,6 +103,40 @@ and is abnormal otherwise.
 ## Commands
 
 ### Run Drain
+Before running Drain, set the parameters in the config file `drain3.ini` in the
+working directory. \
+Available parameters are:
+
+- `[DRAIN]/sim_th` - similarity threshold (default 0.4)
+- `[DRAIN]/depth` - depth of all leaf nodes (default 4)
+- `[DRAIN]/max_children` - max number of children of an internal node 
+    (default 100)
+- `[DRAIN]/extra_delimiters` - delimiters to apply when splitting log message 
+    into words (in addition to whitespace) (default none). 
+    Format is a Python list e.g. `['_', ':']`.
+- `[MASKING]/masking` - parameters masking - in json format (default "")
+- `[SNAPSHOT]/snapshot_interval_minutes` - time interval for new snapshots 
+    (default 1)
+- `[SNAPSHOT]/compress_state` - whether to compress the state before saving it.
+    This can be useful when using Kafka persistence. 
+- `[ADAPTER_PARAMS]/adapter_type` - name of the method to be used to group logs
+    in different sessions. Available ones: ['only_delimiter', 'delimiter+regex', 
+    'only_identifier', 'interval_time']. 
+- `[ADAPTER_PARAMS]/delimiter` - string sentence that calls a new session.
+- `[ADAPTER_PARAMS]/regex` - identifier in format “r-string”. For example,
+    it could be the id of a particular process.
+- `[ADAPTER_PARAMS]/anomaly_labels` - list with the strings leading to an 
+    anomaly. If any list is provided, the output file will contain a binary 
+    flag that indicates whether it is an anomalous sequence (because a message 
+    contains a string in the list) or not.
+    Note: the current DeepLog implementation is unsupervised, thus it doesn't 
+    use this flag. This flag can be set if other supervised algorithms are to be
+    applied.
+- `[ADAPTER_PARAMS]/time_format` - format of time. Example: '%H:%M:%S.%f'.
+- `[ADAPTER_PARAMS]/delta` - dictionary indicating the time that must elapse 
+    to create a new session. Example: {'minutes'=1, 'seconds'=30}
+- `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
+    '\<Pid> \<Content>'. It must contain the word 'Content'.
 Run the following code from terminal. The arguments --input and --output are 
 respectively the filepath of the data to be parsed and the name of the folder 
 where the results will be saved 
