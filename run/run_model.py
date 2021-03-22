@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import sys
-
 import numpy as np
 
 from deeplog_trainer.model.data_preprocess import DataPreprocess

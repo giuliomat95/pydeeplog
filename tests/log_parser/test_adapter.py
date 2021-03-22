@@ -35,7 +35,8 @@ def hdfs_adapter():
     adapter_factory = AdapterFactory()
     return adapter_factory.build_adapter(
         adapter_type=AdapterFactory.ADAPTER_TYPE_REGEX,
-        regex=r'blk_-?\d+')
+        regex=r'blk_-?\d+',
+        anomaly_labels=[])
 
 def get_hdfs_data():
     expected_sess_id = [1, 1, 2, 2, 2, 1, 1, 2, 3, 4, 1, 4, 3, 3, 3]
@@ -88,7 +89,8 @@ def box_unix_adapter():
         adapter_type=AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME,
         logformat='<Date> <Time>, <Content>',
         time_format='%H:%M:%S.%f',
-        delta={'milliseconds': 2})
+        delta={'milliseconds': 2},
+        anomaly_labels=[])
 
 def get_box_unix_data():
     expected_sess_id = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5, 5, 5, 5, 6]
@@ -111,13 +113,15 @@ def test_box_unix_sessions(logs, expected_sess_id, box_unix_adapter):
                              marks=pytest.mark.xfail(raises=Exception))),
                           (pytest.param(
                               AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX,
-                              {'delimiter': 'TCP source connection created'},
+                              {'delimiter': 'TCP source connection created',
+                               'anomaly_labels': []},
                               marks=pytest.mark.xfail(raises=ValueError))),
                           (pytest.param(
                               AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME,
                               {'logformat': '<Date>, <Content>',
                                'time_format': '%H:%M:%S.%f',
-                               'delta': {'milliseconds': 2}},
+                               'delta': {'milliseconds': 2},
+                               'anomaly_labels': []},
                               marks=pytest.mark.xfail(raises=Exception)))])
 def test_exceptions(adapter_type, kwargs):
     adapter_factory = AdapterFactory()

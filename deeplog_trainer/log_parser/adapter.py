@@ -1,5 +1,4 @@
 import re
-import ast
 from datetime import datetime
 from datetime import timedelta
 from abc import ABCMeta, abstractmethod
@@ -24,14 +23,12 @@ class OnlyIdentifier(SessionAdapterInterface):
     different sessions
     """
 
-    def __init__(self, regex, anomaly_labels=None):
+    def __init__(self, regex, anomaly_labels):
         """
         :param regex: The session identifier in format “r-string”. For example,
         it could be the id of a particular process.
         :param anomaly_labels: List with the strings leading to an anomaly
         """
-        if anomaly_labels is None:
-            anomaly_labels = []
         self.regex = regex
         self.anomaly_labels = anomaly_labels
         self.d = {}
@@ -60,15 +57,13 @@ class IdentifierAndDelimiter(SessionAdapterInterface):
     a delimiter string are provided.
     """
 
-    def __init__(self, regex, delimiter: str, anomaly_labels=None):
+    def __init__(self, regex, delimiter: str, anomaly_labels):
         """
         :param regex: The identifier in format “r-string”. For example,
         it could be the id of a particular process.
         :param delimiter: The string sentence that calls a new session.
         :param anomaly_labels:  List with the strings leading to an anomaly
         """
-        if anomaly_labels is None:
-            anomaly_labels = []
         self.regex = regex
         self.delimiter = delimiter
         self.d = {}
@@ -102,13 +97,11 @@ class OnlyDelimiter(SessionAdapterInterface):
     provided
     """
 
-    def __init__(self, delimiter: str, anomaly_labels=None):
+    def __init__(self, delimiter: str, anomaly_labels):
         """
         :param delimiter: The string sentence that calls a new session.
         :param anomaly_labels: List with the strings leading to an anomaly
         """
-        if anomaly_labels is None:
-            anomaly_labels = []
         self.last_session_id = 0
         self.anomaly_flag = {}
         self.delimiter = delimiter
@@ -136,7 +129,7 @@ class TimeInterval(SessionAdapterInterface):
     """
 
     def __init__(self, logformat, time_format: str, delta: dict,
-                 anomaly_labels=None):
+                 anomaly_labels):
         """
         :param logformat: Format of the entry log. The variable must contain the
         word 'Time' to calculate the time interval between the entry log and
@@ -146,8 +139,6 @@ class TimeInterval(SessionAdapterInterface):
         a new session. Example: {'minutes'=1, 'seconds'=30}
         :param anomaly_labels: List with the strings leading to an anomaly.
         """
-        if anomaly_labels is None:
-            anomaly_labels = []
         self.logformat = logformat
         if 'Time' not in self.logformat:
             raise Exception('The logformat must contain the word `Time` in'
@@ -251,17 +242,18 @@ class AdapterFactory:
         raise Exception('Adapter type not found')
 
     def _validate_delimiter_kwargs(self, kwargs):
-        if 'delimiter' not in kwargs:
+        if not {'delimiter', 'anomaly_labels'}.issubset(set(kwargs)):
             raise ValueError('Provide right parameters')
 
     def _validate_regex_kwargs(self, kwargs):
-        if 'regex' not in kwargs:
+        if not {'regex', 'anomaly_labels'}.issubset(set(kwargs)):
             raise ValueError('Provide right parameters')
 
     def _validate_regex_and_delimiter_kwargs(self, kwargs):
-        if not {'delimiter', 'regex'}.issubset(set(kwargs)):
+        if not {'delimiter', 'regex', 'anomaly_labels'}.issubset(set(kwargs)):
             raise ValueError('Provide right parameters')
 
     def _validate_time_interval_kwargs(self, kwargs):
-        if not {'logformat', 'time_format', 'delta'}.issubset(set(kwargs)):
+        if not {'logformat', 'time_format', 'delta', 'anomaly_labels'
+                }.issubset(set(kwargs)):
             raise ValueError('Provide right parameters')
