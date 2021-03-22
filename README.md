@@ -12,6 +12,35 @@ model`, and the `workflow model` to diagnose detected anomalies.
 For more information read the following paper: 
 https://www.cs.utah.edu/~lifeifei/papers/deeplog.pdf.
 
+## Set up
+
+### Dev environment
+
+The first step is to create a virtual environment. You can do this with PyCharm 
+or from the terminal as follows:
+
+```sh
+virtualenv -p python3.8 venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+After this you should configure your IDE to use this environment.
+On Pycharm it can be done on `Settings > Project > Python interpreter`.
+
+### Docker containers
+
+```sh
+docker build --tag docker.devo.internal/dev/mlx/experiments/deeplog-trainer: \
+latest .
+```
+
+```sh
+docker run --detach \
+    --network host \
+    --name deeplog-trainer \
+    docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest
+```
 ## Implementation details
 
 ### Log Parser stage: Drain
@@ -23,10 +52,9 @@ The state-of-the-art log parsing method is represented by Drain, a Depth-Tree
 based online log parsing method. For further details: 
 https://pinjiahe.github.io/papers/ICWS17.pdf. \
 Once that logs are parsed, each of them is encoded with the respective log key 
-id and grouped in different "sessions". 
-In particular, a new group is created every time the content of the log message 
-is "TCP source connection created", and it contains all the logs until a new 
-message with the same starting delimiter come in. 
+id and grouped in different "sessions". \
+In this project we have  used the open source implementation 
+[Drain3](https://github.com/IBM/Drain3).
 
 ### Log key anomaly detection model
 
@@ -72,45 +100,51 @@ within a high-level of confidence interval of the above Gaussian distribution,
 the parameter value vector of the incoming log entry is considered normal,
 and is abnormal otherwise. 
 
-## Dev environment
+## Commands
 
-The first step is to create a virtual environment. You can do this with PyCharm 
-or from the terminal as follows:
+### Run Drain
+Before running Drain, set the parameters in the config file `drain3.ini` in the
+working directory. \
+Available parameters are:
 
-```sh
-virtualenv -p python3.8 venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-After this you should configure your IDE to use this environment.
-On Pycharm it can be done on `Settings > Project > Python interpreter`.
-
-## Docker containers
-
-```sh
-docker build --tag docker.devo.internal/dev/mlx/experiments/deeplog-trainer: \
-latest .
-```
-
-```sh
-docker run --detach \
-    --network host \
-    --name deeplog-trainer \
-    docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest
-```
-## Run Drain
-
+- `[DRAIN]/sim_th` - similarity threshold (default 0.4)
+- `[DRAIN]/depth` - depth of all leaf nodes (default 4)
+- `[DRAIN]/max_children` - max number of children of an internal node 
+    (default 100)
+- `[DRAIN]/extra_delimiters` - delimiters to apply when splitting log message 
+    into words (in addition to whitespace) (default none). 
+    Format is a Python list e.g. `['_', ':']`.
+- `[MASKING]/masking` - parameters masking - in json format (default "")
+- `[SNAPSHOT]/snapshot_interval_minutes` - time interval for new snapshots 
+    (default 1)
+- `[SNAPSHOT]/compress_state` - whether to compress the state before saving it.
+    This can be useful when using Kafka persistence. 
+- `[ADAPTER_PARAMS]/adapter_type` - name of the method to be used to group logs
+    in different sessions. Available ones: ['only_delimiter', 'delimiter+regex', 
+    'only_identifier', 'interval_time']. 
+- `[ADAPTER_PARAMS]/delimiter` - string sentence that calls a new session.
+- `[ADAPTER_PARAMS]/regex` - identifier in format “r-string”. For example,
+    it could be the id of a particular process.
+- `[ADAPTER_PARAMS]/anomaly_labels` - list with the strings leading to an 
+    anomaly. If any list is provided, the output file will contain a binary 
+    flag that indicates whether it is an anomalous sequence (because a message 
+    contains a string in the list) or not.
+    Note: the current DeepLog implementation is unsupervised, thus it doesn't 
+    use this flag. This flag can be set if other supervised algorithms are to be
+    applied.
+- `[ADAPTER_PARAMS]/time_format` - format of time. Example: '%H:%M:%S.%f'.
+- `[ADAPTER_PARAMS]/delta` - dictionary indicating the time that must elapse 
+    to create a new session. Example: {'minutes'=1, 'seconds'=30}
+- `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
+    '\<Pid> \<Content>'. It must contain the word 'Content'.
 Run the following code from terminal. The arguments --input and --output are 
 respectively the filepath of the data to be parsed and the name of the folder 
 where the results will be saved 
 ```sh
-python3 -m path.to.script.run.run_drain --input_file data/filename.log \
---output_path result
+python3 -m run.run_drain --input_file data/filename.log --output_path result
 ```
 
-## Run Log key anomaly detection Model
-
+### Run Log key anomaly detection Model
 To run the `run_model.py` file, set the following parameters in the command 
 line:
 + `input_file`: path of the input json dataset to parse.
@@ -137,17 +171,13 @@ The parameters without default values are mandatory to run the file.
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file run/data/data.json \
+python3 -m run.run_model --input_file data/data.json \
 --output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
-The Drain's algorithm parameters, instead, are configured using 
-[configparser](https://docs.python.org/3.4/library/configparser.html). 
-The Config filename is 
-`drain3.ini` in working directory.
 
-## Run parameter value anomaly detection model
+### Run parameter value anomaly detection model
 
 In order to evaluate the parameter value anomaly detection model, due to the 
 absence of a dataset with log messages whose parameter values are mainly 
@@ -180,19 +210,19 @@ Execute the command `python3 -m run.run_parameter_detection.py -h` to display
 the arguments.
 Example of execution:
 ```sh
-python3 -m path.to.script.run.run_parameter_detection.py --input_file 
-run/data/dataset.json --output_path model_result \
+python3 -m run_parameter_detection --input_file data/dataset.json \
+--output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
-## Tensorboard
+### Tensorboard
 
 To visualize the evolution of the loss/accuracy trend of the train/validation 
 process, run the following code from the root folder:
 ```sh
 tensorboard --logdir logdir
 ```
-## Tests
+### Tests
 
 Run tests with Pytest: from the root folder of the project run the following 
 code:
@@ -227,20 +257,20 @@ We stored a sample of the dataset in the `data` folder, called
 ### Commands:
 + Drain: 
 ```sh 
-python3 -m path.to.script.run.run_drain --input_file data/sample_batrasio.log \
+python3 -m run.run_drain --input_file data/sample_batrasio.log \
 --output_path batrasio_result
 ```
 + Log Key anomaly detection:
 ```sh
-python3 -m path.to.script.run.run_model.py --input_file \
-run/batrasio_result/data.json --output_path model_result \
+python3 -m run.run_model --input_file batrasio_result/data.json \
+--output_path model_result \
 --output_file model.h5 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 + Parameter value anomaly detection:
 ```sh
-python3 -m path.to.script.run.run_parameter_detection.py --input_file 
-run/data/dataset.json --output_path model_result \
+python3 -m run.run_parameter_detection --input_file data/dataset.json \
+--output_path model_result \
 --output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
