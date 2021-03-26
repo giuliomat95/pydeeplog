@@ -1,5 +1,4 @@
 import os
-import sys
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import logging
@@ -10,9 +9,6 @@ from deeplog_trainer.parameter_detection.data_preprocess import DataPreprocess
 from deeplog_trainer.model.training import ModelTrainer
 from deeplog_trainer.model.model_manager import ModelManager
 from deeplog_trainer.parameter_detection.model_evaluator import ModelEvaluator
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
 def run_parameter_detection_model(logger, input_file, window_size, LSTM_units,

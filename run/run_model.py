@@ -2,50 +2,19 @@ import argparse
 import json
 import logging
 import os
-import sys
-import numpy as np
 
-from deeplog_trainer.model.data_preprocess import DataPreprocess
+from . import create_datasets
 from deeplog_trainer.model.model_evaluator import ModelEvaluator
 from deeplog_trainer.model.model_manager import ModelManager
 from deeplog_trainer.model.training import ModelTrainer
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
 def run_model(logger, input_file, window_size, min_length, output_path,
               output_file, LSTM_units, max_epochs, train_ratio, val_ratio,
               early_stop, batch_size, out_tensorboard_path):
-    root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    dataset = []
-    # Load the data parsed from Drain:
-    with open(os.path.join(root_path, input_file), 'r') as fp:
-        data = json.load(fp)
-        for d in data['data']:
-            seq = d['template_seq']
-            if len(seq) < min_length:
-                # Skip short sequences
-                continue
-            dataset.append(seq)
-    dataset = np.array(dataset, dtype=object)
-    # List of unique keys in the training file
-    vocab = list(set([x for seq in dataset for x in seq]))
-    data_preprocess = DataPreprocess(vocab=vocab)
-    dataset = data_preprocess.encode_dataset(dataset)
-    train_idx, val_idx, test_idx = \
-        data_preprocess.split_idx(len(dataset), train_ratio=train_ratio,
-                                  val_ratio=val_ratio)
-    train_dataset = dataset[train_idx]
-    # Save train dataset for building workflows
-    with open(os.path.join(output_path, 'train_dataset.json'), 'w') as f:
-        json.dump({'train_dataset': train_dataset.tolist()}, f)
-    val_dataset = dataset[val_idx]
-    test_dataset = dataset[test_idx]
+    train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
+        logger, input_file, min_length, train_ratio, val_ratio)
     num_tokens = data_preprocess.get_num_tokens()
-    logger.info(
-        'Datasets sizes: {}, {}, {}'.format(len(train_idx), len(val_idx),
-                                            len(test_idx)))
     model_manager = ModelManager()
     model = model_manager.build(ModelManager.MODEL_TYPE_LOG_KEYS,
                                 input_size=window_size,
@@ -86,14 +55,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str,
                         help="Put the input json dataset filepath from root "
-                             "folder")
+                             "folder",
+                        default='artifacts/drain_result/data.json')
     parser.add_argument("--window_size", type=int,
                         help="Put the window_size parameter", default=10)
     parser.add_argument("--min_length", type=int,
                         help="Put the minimum length of a sequence to be "
                              "parsed", default=4)
     parser.add_argument("--output_path", type=str,
-                        help="Put the path of the output directory")
+                        help="Put the path of the output directory",
+                        default='artifacts/model_result')
     parser.add_argument("--output_file", type=str,
                         help="Put the the name of the output model file")
     parser.add_argument("--LSTM_units", type=int,
@@ -120,7 +91,7 @@ if __name__ == '__main__':
                              "tensorboard results if desired", default=None)
     args = parser.parse_args()
     if not os.path.exists(args.output_path):
-        os.mkdir(args.output_path)
+        os.makedirs(args.output_path)
 
     run_model(logging.getLogger(__name__), args.input_file, args.window_size,
               args.min_length, args.output_path, args.output_file,

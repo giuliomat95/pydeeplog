@@ -78,9 +78,10 @@ if __name__ == '__main__':
                         help="Put the input filepath from root folder")
     parser.add_argument("--output_path", type=str,
                         help="Put the name of the directory where the results "
-                             "will be saved")
+                             "will be saved",
+                        default='artifacts/drain_result')
     args = parser.parse_args()
     if not os.path.exists(args.output_path):
-        os.mkdir(args.output_path)
+        os.makedirs(args.output_path)
 
     run_drain(logging.getLogger(__name__), args.input_file, args.output_path)

@@ -1,31 +1,37 @@
 import logging
-import sys
-import os
-import json
 import argparse
 
 from deeplog_trainer.workflow.workflow import WorkflowBuilder
+from . import create_datasets
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
-
-def run_workflows(logger, input_dir):
-    root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+def run_workflows(logger, input_file, min_length, train_ratio, val_ratio):
     workflow_builder = WorkflowBuilder(logger)
-    with open(os.path.join(root_path, input_dir, 'train_dataset.json'),
-              'r') as fp:
-        train_dataset = json.load(fp)['train_dataset']
-    workflows = workflow_builder.build_workflows(train_dataset, verbose=1)
+    train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
+        logger, input_file, min_length, train_ratio, val_ratio)
+    workflows = workflow_builder.build_workflows(train_dataset.tolist(),
+                                                 verbose=1)
     return workflows
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str,
-                        help="Put the name of the directory to retrieve the"
-                             "dataset from")
+    parser.add_argument("--input_file", type=str,
+                        help="Put the input json dataset filepath from root "
+                             "folder",
+                        default='artifacts/drain_result/data.json')
+    parser.add_argument("--min_length", type=int,
+                        help="Put the minimum length of a sequence to be "
+                             "parsed", default=4)
+    parser.add_argument("--train_ratio", type=float,
+                        help="Put the percentage of dataset size to define the"
+                             "train set", default=0.7)
+    parser.add_argument("--val_ratio", type=float,
+                        help="Put the percentage of dataset size to define the"
+                             " validation set", default=0.85)
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
-    workflows = run_workflows(logger, args.input_dir)
+    workflows = run_workflows(logger, args.input_file, args.min_length,
+                              args.train_ratio, args.val_ratio)
     network = workflows['network']
     logger.info('Number of nodes created: {}'.format(len(network.get_nodes())))
