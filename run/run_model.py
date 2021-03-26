@@ -37,6 +37,9 @@ def run_model(logger, input_file, window_size, min_length, output_path,
         data_preprocess.split_idx(len(dataset), train_ratio=train_ratio,
                                   val_ratio=val_ratio)
     train_dataset = dataset[train_idx]
+    # Save train dataset for building workflows
+    with open(os.path.join(output_path, 'train_dataset.json'), 'w') as f:
+        json.dump({'train_dataset': train_dataset.tolist()}, f)
     val_dataset = dataset[val_idx]
     test_dataset = dataset[test_idx]
     num_tokens = data_preprocess.get_num_tokens()

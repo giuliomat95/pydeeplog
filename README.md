@@ -177,8 +177,17 @@ python3 -m run.run_model --input_file data/data.json \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 
-### Run parameter value anomaly detection model
+### Run workflows model
+To run the `run.workflow.py` file, set the following parameter in the command 
+line:
++ `input_dir`: name of the directory to retrieve the data set from
 
+Example of execution:
+```sh
+python3 -m run.run_workflow --input_dir model_result
+```
+
+### Run parameter value anomaly detection model
 In order to evaluate the parameter value anomaly detection model, due to the 
 absence of a dataset with log messages whose parameter values are mainly 
 numerical, we used a synthetic data. In general, it should be provided a 
