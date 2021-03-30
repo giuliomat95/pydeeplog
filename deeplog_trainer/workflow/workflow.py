@@ -325,3 +325,54 @@ class WorkflowBuilder:
         result = [list(set(result[i] + transfer[i])) for i in
                   range(len(transfer))] + result[len(transfer):]
         return result
+
+
+class WorkflowEvaluator:
+    def __init__(self, logger, network):
+        """
+        Attributes
+        :param logger: logger function from logging module
+        :param network: Network object created with class WorkflowBuilder
+        """
+        self.logger = logger
+        self.network = network
+
+    def evaluate(self, dataset, verbose=0):
+        if verbose > 0:
+            self.logger.info('Evaluating workflows...')
+        results = []
+        for i, seq in enumerate(dataset):
+            if verbose > 0:
+                self.logger.info('- Item %d / %d' % (i + 1, len(dataset)))
+            root_node = self.network.get_root_node()
+            has_path = self._evaluate_seq(root_node, seq)
+            results.append(has_path)
+        return results
+
+    def _evaluate_seq(self, node, seq):
+        if len(seq) == 0:
+            return True
+        else:
+            children = node.get_children()
+            current_value = seq[0]
+            if current_value not in children:
+                # Sequence does not exist in the workflows
+                return False
+            else:
+                next_node_idx = children[current_value]
+                next_node = self.network.get_node(next_node_idx)
+                return self._evaluate_seq(next_node, seq[1:])
+
+    @staticmethod
+    def compute_scores(matches):
+        n_items = len(matches)
+        n_correct = sum(matches)
+        try:
+            accuracy = n_correct / n_items
+        except ZeroDivisionError:
+            accuracy = 0
+        return {
+            'n_items': n_items,
+            'n_correct': n_correct,
+            'accuracy': accuracy
+        }

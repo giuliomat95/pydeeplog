@@ -90,12 +90,14 @@ if __name__ == '__main__':
                         help="Put the name of the folder where to save the "
                              "tensorboard results if desired", default=None)
     args = parser.parse_args()
-    if not os.path.exists(args.output_path):
-        os.makedirs(args.output_path)
+    try:
+        os.makedirs(args.output_path, exist_ok=True)
+    except OSError as error:
+        print("Directory '%s' can not be created")
+        exit(1)
 
     run_model(logging.getLogger(__name__), args.input_file, args.window_size,
               args.min_length, args.output_path, args.output_file,
               args.LSTM_units, args.max_epochs, args.train_ratio,
               args.val_ratio,
               args.early_stop, args.batch_size, args.out_tensorboard_path)
-

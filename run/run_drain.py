@@ -81,7 +81,10 @@ if __name__ == '__main__':
                              "will be saved",
                         default='artifacts/drain_result')
     args = parser.parse_args()
-    if not os.path.exists(args.output_path):
-        os.makedirs(args.output_path)
+    try:
+        os.makedirs(args.output_path, exist_ok=True)
+    except OSError as error:
+        print("Directory '%s' can not be created")
+        exit(1)
 
     run_drain(logging.getLogger(__name__), args.input_file, args.output_path)

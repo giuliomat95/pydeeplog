@@ -138,9 +138,9 @@ Available parameters are:
 - `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
     '\<Pid> \<Content>'. It must contain the word 'Content'.
 
-Run the following code from terminal. The arguments --input and --output are 
-respectively the filepath of the data to be parsed and the name of the folder 
-where the results will be saved. The default output path is
+Run the following code from terminal. The arguments `--input_file` and 
+`--output_path` are respectively the filepath of the data to be parsed and the 
+name of the folder where the results will be saved. The default output path is
 `artifacts/drain_result`.
 ```sh
 python3 -m run.run_drain --input_file data/{filename}.log
@@ -184,6 +184,8 @@ To run the `run.workflow.py` file, set the following parameter in the command
 line:
 + `input_file`: path of the input json dataset to parse. Default path: 
 `artifacts/drain_result/data.json`.
++ `output_path`: path of the directory where to save the workflows in a pickle 
+ file. Default path: `artifacts/workflows`
 + `min_length`: the minimum length of a sequence to be parsed. Default value set
  to 4.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
