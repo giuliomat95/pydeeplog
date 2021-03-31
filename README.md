@@ -190,6 +190,10 @@ line:
  to 4.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
 + `val_ratio`: it defines the validation set. Default value set to 0.85.
++ `threshold`: threshold to calculate similarity between two sequences. 
+ Default value: 0.8.
++ `back_steps`: number of step backwards to research similar workflows. Default 
+ value: 1.
 
 Example of execution:
 ```sh

@@ -8,11 +8,12 @@ from . import create_datasets
 
 
 def run_workflows(logger, input_file, output_path, min_length, train_ratio,
-                  val_ratio):
+                  val_ratio, threshold, back_steps):
     workflow_builder = WorkflowBuilder(logger)
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
         logger, input_file, min_length, train_ratio, val_ratio)
-    workflows = workflow_builder.build_workflows(train_dataset.tolist())
+    workflows = workflow_builder.build_workflows(train_dataset.tolist(),
+                                                 threshold, back_steps)
     network = workflows['network']
     logger.info('Number of nodes created: {}'.format(len(network.get_nodes())))
     workflow_evaluator = WorkflowEvaluator(logger, network)
@@ -44,7 +45,12 @@ if __name__ == '__main__':
                              "train set", default=0.7)
     parser.add_argument("--val_ratio", type=float,
                         help="Put the percentage of dataset size to define the"
-                             " validation set", default=0.85)
+                             "validation set", default=0.85)
+    parser.add_argument("--threshold", type=float,
+                        help="Put the similarity threshold", default=0.8)
+    parser.add_argument("--back-steps", type=int,
+                        help="Put the number of steps backwards to research"
+                             "similar workflows", default=1)
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
     try:
@@ -54,4 +60,5 @@ if __name__ == '__main__':
         exit(1)
 
     run_workflows(logger, args.input_file, args.output_path,
-                  args.min_length, args.train_ratio, args.val_ratio)
+                  args.min_length, args.train_ratio, args.val_ratio,
+                  args.threshold, args.back_steps)
