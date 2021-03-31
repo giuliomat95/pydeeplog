@@ -12,7 +12,7 @@ class WorkflowBuilder:
         self.logger = logger
 
     def build_workflows(self, dataset, initial_workflows=None, threshold=0.8,
-                        back_steps=1, verbose=0, verbose_prefix=''):
+                        back_steps=1):
         """
         Builds workflows given a dataset of sequences. Also, it is possible to
         provide a set of workflows (initial_workflows) to update them.
@@ -30,26 +30,19 @@ class WorkflowBuilder:
         wf_sequences = [tuple(s) for s in wf_sequences]
         wf_sequences = [list(s) for s in list(dict.fromkeys(wf_sequences))]
         similar_seqs = self._get_similar_sequences(wf_sequences,
-                                                   threshold=threshold,
-                                                   verbose=verbose,
-                                                   verbose_prefix=
-                                                   verbose_prefix)
+                                                   threshold=threshold)
         _ = self._build_all_paths(workflows['network'], similar_seqs,
-                                  back_steps=back_steps, verbose=verbose,
-                                  verbose_prefix=verbose_prefix)
+                                  back_steps=back_steps)
 
         workflows['data'] = wf_sequences
 
         return workflows
 
-    def _get_similar_sequences(self, dataset, threshold, verbose,
-                               verbose_prefix=''):
+    def _get_similar_sequences(self, dataset, threshold):
         """
         Find similar sequences using BLEU score.
         """
-        if verbose > 0:
-            self.logger.info('{0}Searching similar sequences...'.format(
-                verbose_prefix))
+        self.logger.info('Searching similar sequences...')
         # Long sequences first
         n_items = len(dataset)
         dataset = sorted(dataset, key=len, reverse=True)
@@ -74,9 +67,8 @@ class WorkflowBuilder:
                 [original_dataset[i]])  # Copy sequences from original dataset
             # This copy in a list a list of list of sequences. weird
         for offset in range(1, n_items):
-            if verbose > 0:
-                self.logger.info('{}Searching similar sequences: {} / {}...'
-                                 .format(verbose_prefix, offset, n_items - 1))
+            self.logger.info('Searching similar sequences: {} / {}...'.format(
+                offset, n_items - 1))
 
             # To compute the exact BLEU score, we have to use the maximum
             # between the length of s1 and the length of all sequences. However,
@@ -119,21 +111,16 @@ class WorkflowBuilder:
                     return iter_found_workflow
         return []
 
-    def _build_all_paths(self, network, similar_seqs, back_steps, verbose,
-                         verbose_prefix=''):
+    def _build_all_paths(self, network, similar_seqs, back_steps):
         # Build paths between nodes
-        if verbose > 0:
-            self.logger.info('{}Building workflows...'.format(verbose_prefix))
-
+        self.logger.info('Building workflows...')
         root_node = network.get_root_node()
         root_idx = root_node.get_idx()
 
         added_workflows = []
         for i, seqs in enumerate(similar_seqs):
-            if verbose > 0:
-                self.logger.info('{}Building workflows: {} / {}...'.format(
-                    verbose_prefix, i + 1, len(similar_seqs)))
-
+            self.logger.info('Building workflows: {} / {}...'.format(
+                i + 1, len(similar_seqs)))
             ref_seq = []
             ref_workflows = []
             explored_edges = {}
@@ -182,11 +169,9 @@ class WorkflowBuilder:
             # Then, add the rest of the sequences in the group similar_seqs
             # using the first added sequence as a reference
             for k, seq in enumerate(seqs[1:]):
-                if verbose > 0:
-                    self.logger.info('{}Building workflows: {} / {} ({} / {})'
-                                     '...'.format(verbose_prefix, i + 1,
-                                                  len(similar_seqs), k + 2,
-                                                  len(seqs)))
+                self.logger.info('Building workflows: {} / {} ({} / {})'
+                                     '...'.format(i + 1, len(similar_seqs),
+                                                  k + 2, len(seqs)))
 
                 if k+1 in seqs_to_ignore:
                     continue
@@ -337,13 +322,11 @@ class WorkflowEvaluator:
         self.logger = logger
         self.network = network
 
-    def evaluate(self, dataset, verbose=0):
-        if verbose > 0:
-            self.logger.info('Evaluating workflows...')
+    def evaluate(self, dataset):
+        self.logger.info('Evaluating workflows...')
         results = []
         for i, seq in enumerate(dataset):
-            if verbose > 0:
-                self.logger.info('- Item %d / %d' % (i + 1, len(dataset)))
+            self.logger.info('- Item %d / %d' % (i + 1, len(dataset)))
             root_node = self.network.get_root_node()
             has_path = self._evaluate_seq(root_node, seq)
             results.append(has_path)

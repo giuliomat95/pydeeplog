@@ -12,12 +12,11 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
     workflow_builder = WorkflowBuilder(logger)
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
         logger, input_file, min_length, train_ratio, val_ratio)
-    workflows = workflow_builder.build_workflows(train_dataset.tolist(),
-                                                 verbose=1)
+    workflows = workflow_builder.build_workflows(train_dataset.tolist())
     network = workflows['network']
     logger.info('Number of nodes created: {}'.format(len(network.get_nodes())))
     workflow_evaluator = WorkflowEvaluator(logger, network)
-    matches = workflow_evaluator.evaluate(test_dataset, verbose=1)
+    matches = workflow_evaluator.evaluate(test_dataset)
     scores = workflow_evaluator.compute_scores(matches)
     logger.info('Workflow evaluation results: \n- accuracy: {}\n- n_correct: {}'
                 '\n- n_items: {}'.format(scores['accuracy'],
@@ -25,7 +24,7 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
                 )
     # Save workflows in pickle file
     with open(os.path.join(output_path, 'workflows.pickle'), 'wb') as h:
-        pickle.dump(network, h)
+        pickle.dump(network, h, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
@@ -47,12 +46,12 @@ if __name__ == '__main__':
                         help="Put the percentage of dataset size to define the"
                              " validation set", default=0.85)
     args = parser.parse_args()
+    logger = logging.getLogger(__name__)
     try:
         os.makedirs(args.output_path, exist_ok=True)
     except OSError as error:
-        print("Directory '%s' can not be created")
+        logger.info("Directory '%s' can not be created")
         exit(1)
-    logger = logging.getLogger(__name__)
 
     run_workflows(logger, args.input_file, args.output_path,
                   args.min_length, args.train_ratio, args.val_ratio)
