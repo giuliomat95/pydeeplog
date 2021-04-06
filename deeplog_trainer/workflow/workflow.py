@@ -12,7 +12,7 @@ class WorkflowBuilder:
         self.logger = logger
 
     def build_workflows(self, dataset, initial_workflows=None, threshold=0.8,
-                        back_steps=1, verbose=0, verbose_prefix=''):
+                        back_steps=1):
         """
         Builds workflows given a dataset of sequences. Also, it is possible to
         provide a set of workflows (initial_workflows) to update them.
@@ -24,32 +24,24 @@ class WorkflowBuilder:
             }
         else:
             workflows = copy.deepcopy(initial_workflows)
-
         wf_sequences = dataset + [seq for seq in workflows['data']]
         # Remove duplicate sequences
         wf_sequences = [tuple(s) for s in wf_sequences]
         wf_sequences = [list(s) for s in list(dict.fromkeys(wf_sequences))]
         similar_seqs = self._get_similar_sequences(wf_sequences,
-                                                   threshold=threshold,
-                                                   verbose=verbose,
-                                                   verbose_prefix=
-                                                   verbose_prefix)
+                                                   threshold=threshold)
         _ = self._build_all_paths(workflows['network'], similar_seqs,
-                                  back_steps=back_steps, verbose=verbose,
-                                  verbose_prefix=verbose_prefix)
+                                  back_steps=back_steps)
 
         workflows['data'] = wf_sequences
 
         return workflows
 
-    def _get_similar_sequences(self, dataset, threshold, verbose,
-                               verbose_prefix=''):
+    def _get_similar_sequences(self, dataset, threshold):
         """
         Find similar sequences using BLEU score.
         """
-        if verbose > 0:
-            self.logger.info('{0}Searching similar sequences...'.format(
-                verbose_prefix))
+        self.logger.info('Searching similar sequences...')
         # Long sequences first
         n_items = len(dataset)
         dataset = sorted(dataset, key=len, reverse=True)
@@ -74,9 +66,8 @@ class WorkflowBuilder:
                 [original_dataset[i]])  # Copy sequences from original dataset
             # This copy in a list a list of list of sequences. weird
         for offset in range(1, n_items):
-            if verbose > 0:
-                self.logger.info('{}Searching similar sequences: {} / {}...'
-                                 .format(verbose_prefix, offset, n_items - 1))
+            self.logger.info('Searching similar sequences: {} / {}...'.format(
+                offset, n_items - 1))
 
             # To compute the exact BLEU score, we have to use the maximum
             # between the length of s1 and the length of all sequences. However,
@@ -119,21 +110,16 @@ class WorkflowBuilder:
                     return iter_found_workflow
         return []
 
-    def _build_all_paths(self, network, similar_seqs, back_steps, verbose,
-                         verbose_prefix=''):
+    def _build_all_paths(self, network, similar_seqs, back_steps):
         # Build paths between nodes
-        if verbose > 0:
-            self.logger.info('{}Building workflows...'.format(verbose_prefix))
-
+        self.logger.info('Building workflows...')
         root_node = network.get_root_node()
         root_idx = root_node.get_idx()
 
         added_workflows = []
         for i, seqs in enumerate(similar_seqs):
-            if verbose > 0:
-                self.logger.info('{}Building workflows: {} / {}...'.format(
-                    verbose_prefix, i + 1, len(similar_seqs)))
-
+            self.logger.info('Building workflows: {} / {}...'.format(
+                i + 1, len(similar_seqs)))
             ref_seq = []
             ref_workflows = []
             explored_edges = {}
@@ -182,13 +168,11 @@ class WorkflowBuilder:
             # Then, add the rest of the sequences in the group similar_seqs
             # using the first added sequence as a reference
             for k, seq in enumerate(seqs[1:]):
-                if verbose > 0:
-                    self.logger.info('{}Building workflows: {} / {} ({} / {})'
-                                     '...'.format(verbose_prefix, i + 1,
-                                                  len(similar_seqs), k + 2,
-                                                  len(seqs)))
+                self.logger.info('Building workflows: {} / {} ({} / {})'
+                                 '...'.format(i + 1, len(similar_seqs),
+                                              k + 2, len(seqs)))
 
-                if k+1 in seqs_to_ignore:
+                if k + 1 in seqs_to_ignore:
                     continue
 
                 iter_added_workflows = self._build_path(
@@ -325,3 +309,49 @@ class WorkflowBuilder:
         result = [list(set(result[i] + transfer[i])) for i in
                   range(len(transfer))] + result[len(transfer):]
         return result
+
+
+class WorkflowEvaluator:
+    def __init__(self, logger, network: {}):
+        """
+        Attributes
+        :param logger: logger function from logging module
+        :param network: Network in json format created with class
+        WorkflowBuilder
+        """
+        self.logger = logger
+        self.network = network
+
+    def evaluate(self, dataset):
+        self.logger.info('Evaluating workflows...')
+        root_node = self.network['0']
+        results = [self._evaluate_seq(root_node, seq) for seq in dataset]
+        return results
+
+    def _evaluate_seq(self, node: {}, seq):
+        if len(seq) == 0:
+            return True
+        else:
+            children = node["children"]
+            current_value = str(seq[0])
+            if current_value not in children:
+                # Sequence does not exist in the workflows
+                return False
+            else:
+                next_node_idx = children[current_value]
+                next_node = self.network[str(next_node_idx)]
+                return self._evaluate_seq(next_node, seq[1:])
+
+    @staticmethod
+    def compute_scores(matches):
+        n_items = len(matches)
+        n_correct = sum(matches)
+        try:
+            accuracy = n_correct / n_items
+        except ZeroDivisionError:
+            accuracy = 0
+        return {
+            'n_items': n_items,
+            'n_correct': n_correct,
+            'accuracy': accuracy
+        }
