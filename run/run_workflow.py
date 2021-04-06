@@ -32,8 +32,7 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
                                          scores['n_correct'], scores['n_items'])
                 )
     # Save workflows in json file
-    with open(os.path.join(output_path, 'workflows.json'),
-              'w') as f:
+    with open(os.path.join(output_path, 'workflows.json'), 'w') as f:
         json.dump(network_dict, f)
 
 
