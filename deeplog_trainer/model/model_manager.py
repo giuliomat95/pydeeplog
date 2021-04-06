@@ -1,7 +1,6 @@
 import tensorflow as tf
-from tensorflow_addons.layers import WeightNormalization
 from tensorflow.keras.models import Model, load_model
-from tensorflow.keras.layers import Input, LSTM, Dense, BatchNormalization
+from tensorflow.keras.layers import Input, LSTM, Dense, Dropout
 import os
 
 
@@ -45,10 +44,8 @@ class ModelManager:
 
         x = LSTM(lstm_units, return_sequences=True)(x)
         x = LSTM(lstm_units, return_sequences=False)(x)
-        x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(256, activation='relu'))(x)
-        x = BatchNormalization()(x)
-        x = WeightNormalization(Dense(128, activation='relu'))(x)
+        x = Dense(256, activation='relu')(x)
+        x = Dense(128, activation='relu')(x)
         x = Dense(num_tokens, activation='softmax')(x)
 
         model = Model(inputs=x_input, outputs=x)
@@ -65,13 +62,13 @@ class ModelManager:
     def _build_log_params_model(self, input_size: int, lstm_units: int,
                                 num_params: int):
 
-        x = tf.keras.layers.Input(shape=(input_size, num_params))
+        x = Input(shape=(input_size, num_params))
         x_input = x
 
-        x = tf.keras.layers.LSTM(lstm_units, return_sequences=True)(x)
-        x = tf.keras.layers.LSTM(lstm_units, return_sequences=False)(x)
-        x = tf.keras.layers.Dropout(0.2)(x)
-        x = tf.keras.layers.Dense(num_params)(x)
+        x = LSTM(lstm_units, return_sequences=True)(x)
+        x = LSTM(lstm_units, return_sequences=False)(x)
+        x = Dropout(0.2)(x)
+        x = Dense(num_params)(x)
 
         model = tf.keras.models.Model(inputs=x_input, outputs=x)
 
