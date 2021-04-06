@@ -1,7 +1,7 @@
 import logging
 import argparse
 import os
-import pickle
+import json
 
 from deeplog_trainer.workflow.workflow import WorkflowBuilder, WorkflowEvaluator
 from . import create_datasets
@@ -13,19 +13,28 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
         logger, input_file, min_length, train_ratio, val_ratio)
     workflows = workflow_builder.build_workflows(train_dataset.tolist(),
-                                                 threshold, back_steps)
+                                                 threshold=threshold,
+                                                 back_steps=back_steps)
     network = workflows['network']
     logger.info('Number of nodes created: {}'.format(len(network.get_nodes())))
-    workflow_evaluator = WorkflowEvaluator(logger, network)
+    network_dict = {}
+    for node_idx, node in network.get_nodes().items():
+        network_dict[str(node_idx)] = {'value': node.get_value(),
+                                  'children': node.get_children(),
+                                  'parents': node.get_parents(),
+                                  'is_start': node.is_start(),
+                                  'is_end': node.is_end()}
+    workflow_evaluator = WorkflowEvaluator(logger, network_dict)
     matches = workflow_evaluator.evaluate(test_dataset)
     scores = workflow_evaluator.compute_scores(matches)
     logger.info('Workflow evaluation results: \n- accuracy: {}\n- n_correct: {}'
                 '\n- n_items: {}'.format(scores['accuracy'],
                                          scores['n_correct'], scores['n_items'])
                 )
-    # Save workflows in pickle file
-    with open(os.path.join(output_path, 'workflows.pickle'), 'wb') as h:
-        pickle.dump(network, h, protocol=pickle.HIGHEST_PROTOCOL)
+    # Save workflows in json file
+    with open(os.path.join(output_path, 'workflows.json'),
+              'w') as f:
+        json.dump(network_dict, f)
 
 
 if __name__ == '__main__':

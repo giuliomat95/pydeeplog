@@ -24,7 +24,6 @@ class WorkflowBuilder:
             }
         else:
             workflows = copy.deepcopy(initial_workflows)
-
         wf_sequences = dataset + [seq for seq in workflows['data']]
         # Remove duplicate sequences
         wf_sequences = [tuple(s) for s in wf_sequences]
@@ -170,10 +169,10 @@ class WorkflowBuilder:
             # using the first added sequence as a reference
             for k, seq in enumerate(seqs[1:]):
                 self.logger.info('Building workflows: {} / {} ({} / {})'
-                                     '...'.format(i + 1, len(similar_seqs),
-                                                  k + 2, len(seqs)))
+                                 '...'.format(i + 1, len(similar_seqs),
+                                              k + 2, len(seqs)))
 
-                if k+1 in seqs_to_ignore:
+                if k + 1 in seqs_to_ignore:
                     continue
 
                 iter_added_workflows = self._build_path(
@@ -313,37 +312,34 @@ class WorkflowBuilder:
 
 
 class WorkflowEvaluator:
-    def __init__(self, logger, network):
+    def __init__(self, logger, network: {}):
         """
         Attributes
         :param logger: logger function from logging module
-        :param network: Network object created with class WorkflowBuilder
+        :param network: Network in json format created with class
+        WorkflowBuilder
         """
         self.logger = logger
         self.network = network
 
     def evaluate(self, dataset):
         self.logger.info('Evaluating workflows...')
-        results = []
-        for i, seq in enumerate(dataset):
-            self.logger.info('- Item %d / %d' % (i + 1, len(dataset)))
-            root_node = self.network.get_root_node()
-            has_path = self._evaluate_seq(root_node, seq)
-            results.append(has_path)
+        root_node = self.network['0']
+        results = [self._evaluate_seq(root_node, seq) for seq in dataset]
         return results
 
-    def _evaluate_seq(self, node, seq):
+    def _evaluate_seq(self, node: {}, seq):
         if len(seq) == 0:
             return True
         else:
-            children = node.get_children()
-            current_value = seq[0]
+            children = node["children"]
+            current_value = str(seq[0])
             if current_value not in children:
                 # Sequence does not exist in the workflows
                 return False
             else:
                 next_node_idx = children[current_value]
-                next_node = self.network.get_node(next_node_idx)
+                next_node = self.network[str(next_node_idx)]
                 return self._evaluate_seq(next_node, seq[1:])
 
     @staticmethod
