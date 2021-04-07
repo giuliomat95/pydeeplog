@@ -333,7 +333,7 @@ class WorkflowEvaluator:
             return True
         else:
             children = node["children"]
-            current_value = str(seq[0])
+            current_value = seq[0]
             if current_value not in children:
                 # Sequence does not exist in the workflows
                 return False
