@@ -156,8 +156,7 @@ value set to 10.
 + `min_length`: the minimum length of a sequence to be parsed. Default value set
  to 4.
 + `output_path`: path of the directory where to save the trained model, as well 
-as the config values. Default path: `artifacts/model_result`
-+ `output_file`: name of the output model file.
+as the config values. Default path: `artifacts/model_result`.
 + `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
 + `val_ratio`: it defines the validation set. Default value set to 0.85.
@@ -170,11 +169,13 @@ be stopped. Default value set to 7.
 + `out_tensorboard_path`: name of the folder where to save the tensorboard 
 results. If empty any board is stored. Default value set to `None`.
 
+The model is saved in `h5` format with the name `model.h5` in the directory 
+provided.
 The parameters without default values are mandatory to run the file.  
 Execute the command `python3 -m run.run_model.py -h` to display the arguments.
 Example of execution:
 ```sh
-python3 -m run.run_model --output_file model.h5 --window_size 12 \
+python3 -m run.run_model --window_size 12 \
 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```

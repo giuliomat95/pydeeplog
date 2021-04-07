@@ -2,6 +2,10 @@ import pytest
 from deeplog_trainer.workflow.workflow import WorkflowBuilder, WorkflowEvaluator
 import logging as logger
 import numpy as np
+import tempfile
+import json
+import os
+
 
 def get_dataset():
     train_dataset = [
@@ -57,7 +61,19 @@ def test_workflow_evaluator(train_dataset, test_dataset, threshold,
                                                 threshold=threshold,
                                                 back_steps=1)
     network = workflow['network']
-    workflow_evaluator = WorkflowEvaluator(logger, network)
+    network_dict = {}
+    for node_idx, node in network.get_nodes().items():
+        network_dict[str(node_idx)] = {'value': node.get_value(),
+                                       'children': node.get_children(),
+                                       'parents': node.get_parents(),
+                                       'is_start': node.is_start(),
+                                       'is_end': node.is_end()}
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        with open(os.path.join(tmpdirname, 'test.json'), 'w') as f:
+            json.dump(network_dict, f)
+            f.close()
+            assert os.path.getsize(f.name) != 0
+    workflow_evaluator = WorkflowEvaluator(logger, network_dict)
     matches = workflow_evaluator.evaluate(test_dataset)
     assert matches == expected_matches
     scores = workflow_evaluator.compute_scores(matches)

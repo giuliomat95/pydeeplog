@@ -10,7 +10,7 @@ from deeplog_trainer.model.training import ModelTrainer
 
 
 def run_model(logger, input_file, window_size, min_length, output_path,
-              output_file, LSTM_units, max_epochs, train_ratio, val_ratio,
+              LSTM_units, max_epochs, train_ratio, val_ratio,
               early_stop, batch_size, out_tensorboard_path):
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
         logger, input_file, min_length, train_ratio, val_ratio)
@@ -36,7 +36,7 @@ def run_model(logger, input_file, window_size, min_length, output_path,
     model_trainer.train(model, [X_train, y_train], [X_val, y_val],
                         out_tensorboard_path=out_tensorboard_path)
     # Save the model
-    model_manager.save(model, output_path, output_file)
+    model_manager.save(model, output_path)
     # Calculate scores for different K values in the validation set
     for k in range(1, 5):
         model_evaluator = ModelEvaluator(model, top_k=k)
@@ -65,8 +65,6 @@ if __name__ == '__main__':
     parser.add_argument("--output_path", type=str,
                         help="Put the path of the output directory",
                         default='artifacts/model_result')
-    parser.add_argument("--output_file", type=str,
-                        help="Put the the name of the output model file")
     parser.add_argument("--LSTM_units", type=int,
                         help="Put the number of units in each LSTM layer",
                         default=64)
