@@ -96,7 +96,6 @@ if __name__ == '__main__':
         exit(1)
 
     run_model(logger, args.input_file, args.window_size,
-              args.min_length, args.output_path, args.output_file,
-              args.LSTM_units, args.max_epochs, args.train_ratio,
-              args.val_ratio,
+              args.min_length, args.output_path, args.LSTM_units,
+              args.max_epochs, args.train_ratio, args.val_ratio,
               args.early_stop, args.batch_size, args.out_tensorboard_path)

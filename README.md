@@ -147,8 +147,8 @@ python3 -m run.run_drain --input_file data/{filename}.log
 ```
 
 ### Run Log key anomaly detection Model
-To run the `run_model.py` file, set the following parameters in the command 
-line:
+To run the `run_log_key_detection_model.py` file, set the following parameters 
+in the command line:
 + `input_file`: path of the input json dataset to parse. Default path: 
 `artifacts/drain_result/data.json`.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
@@ -172,10 +172,11 @@ results. If empty any board is stored. Default value set to `None`.
 The model is saved in `h5` format with the name `model.h5` in the directory 
 provided.
 The parameters without default values are mandatory to run the file.  
-Execute the command `python3 -m run.run_model.py -h` to display the arguments.
+Execute the command `python3 -m run.run_log_key_detection_model.py -h` to 
+display the arguments.
 Example of execution:
 ```sh
-python3 -m run.run_model --window_size 12 \
+python3 -m run.run_log_key_detection_model --window_size 12 \
 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
@@ -285,7 +286,8 @@ python3 -m run.run_drain --input_file data/sample_batrasio.log \
 ```
 + Log Key anomaly detection:
 ```sh
-python3 -m run.run_model --input_file batrasio_result/data.json \
+python3 -m run.run_log_key_detection_model \
+--input_file batrasio_result/data.json \
 --output_path model_result \
 --output_file model.h5 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
