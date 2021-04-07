@@ -79,8 +79,8 @@ class ModelManager:
         )
         return model
 
-    def save(self, model, output_path: str):
-        model.save(os.path.join(output_path, 'model.h5'), save_format='h5')
+    def save(self, model, output_path: str, filename: str):
+        model.save(os.path.join(output_path, filename), save_format='h5')
 
     def load(self, filepath: str):
         model = load_model(filepath)

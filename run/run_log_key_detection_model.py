@@ -36,7 +36,7 @@ def run_model(logger, input_file, window_size, min_length, output_path,
     model_trainer.train(model, [X_train, y_train], [X_val, y_val],
                         out_tensorboard_path=out_tensorboard_path)
     # Save the model
-    model_manager.save(model, output_path)
+    model_manager.save(model, output_path, 'log_key_model.h5')
     # Calculate scores for different K values in the validation set
     for k in range(1, 5):
         model_evaluator = ModelEvaluator(model, top_k=k)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
                              "parsed", default=4)
     parser.add_argument("--output_path", type=str,
                         help="Put the path of the output directory",
-                        default='artifacts/model_result')
+                        default='artifacts/log_key_model_result')
     parser.add_argument("--LSTM_units", type=int,
                         help="Put the number of units in each LSTM layer",
                         default=64)
