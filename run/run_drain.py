@@ -85,7 +85,7 @@ if __name__ == '__main__':
     try:
         os.makedirs(args.output_path, exist_ok=True)
     except OSError as error:
-        logger.info("Directory '%s' can not be created")
+        logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
 
     run_drain(logger, args.input_file, args.output_path)
