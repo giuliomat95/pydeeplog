@@ -293,6 +293,10 @@ python3 -m run.run_log_key_detection_model \
 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
++ Workflow:
+```sh
+python3 -m run.run_workflow --train_ratio 0.5 --val_ratio 0.75
+```
 + Parameter value anomaly detection:
 ```sh
 python3 -m run.run_parameter_detection_model --input_file data/dataset.json \
