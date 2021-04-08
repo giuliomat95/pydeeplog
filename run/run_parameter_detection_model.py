@@ -11,10 +11,10 @@ from deeplog_trainer.model.model_manager import ModelManager
 from deeplog_trainer.parameter_detection.model_evaluator import ModelEvaluator
 
 
-def run_parameter_detection_model(logger, input_file, window_size, LSTM_units,
-                                  max_epochs, train_ratio, val_ratio,
-                                  early_stop, batch_size, out_tensorboard_path,
-                                  alpha):
+def run_parameter_detection_model(logger, input_file, output_path, window_size,
+                                  LSTM_units, max_epochs, train_ratio,
+                                  val_ratio, early_stop, batch_size,
+                                  out_tensorboard_path, alpha):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     # Upload the data to be evaluated
     with open(os.path.join(root_path, input_file), 'r') as fp:
@@ -51,6 +51,8 @@ def run_parameter_detection_model(logger, input_file, window_size, LSTM_units,
                         metric_index='mse',
                         out_tensorboard_path=out_tensorboard_path)
     model.summary()
+    # Save the model
+    model_manager.save(model, output_path, 'log_par_model.h5')
     y_val_pred = model.predict(X_val)
     # Model Evaluation:
     model_evaluator = ModelEvaluator(logger)
@@ -79,6 +81,9 @@ if __name__ == '__main__':
     parser.add_argument("--input_file", type=str,
                         help="Put the input json dataset filepath from root "
                              "folder")
+    parser.add_argument("--output_path", type=str,
+                        help="Put the path of the output directory",
+                        default='artifacts/log_par_model_result')
     parser.add_argument("--window_size", type=int,
                         help="Put the window_size parameter", default=5)
     parser.add_argument("--LSTM_units", type=int,
@@ -107,10 +112,16 @@ if __name__ == '__main__':
                                                     "confidence interval",
                         default=0.95)
     args = parser.parse_args()
+    logger = logging.getLogger(__name__)
+    try:
+        os.makedirs(args.output_path, exist_ok=True)
+    except OSError as error:
+        logger.error("Directory {} can not be created".format(args.output_path))
+        exit(1)
 
-    run_parameter_detection_model(logging.getLogger(__name__), args.input_file,
-                                  args.window_size, args.LSTM_units,
-                                  args.max_epochs, args.train_ratio,
-                                  args.val_ratio, args.early_stop,
-                                  args.batch_size, args.out_tensorboard_path,
-                                  args.alpha)
+    run_parameter_detection_model(logger, args.input_file,
+                                  args.output_path, args.window_size,
+                                  args.LSTM_units, args.max_epochs,
+                                  args.train_ratio, args.val_ratio,
+                                  args.early_stop, args.batch_size,
+                                  args.out_tensorboard_path, args.alpha)

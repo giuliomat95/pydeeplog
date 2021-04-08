@@ -156,7 +156,7 @@ value set to 10.
 + `min_length`: the minimum length of a sequence to be parsed. Default value set
  to 4.
 + `output_path`: path of the directory where to save the trained model, as well 
-as the config values. Default path: `artifacts/model_result`.
+as the config values. Default path: `artifacts/log_key_model_result`.
 + `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
 + `val_ratio`: it defines the validation set. Default value set to 0.85.
@@ -169,10 +169,10 @@ be stopped. Default value set to 7.
 + `out_tensorboard_path`: name of the folder where to save the tensorboard 
 results. If empty any board is stored. Default value set to `None`.
 
-The model is saved in `h5` format with the name `model.h5` in the directory 
-provided.
+The model is saved in `h5` format with the name `log_key_model.h5` in the 
+directory provided.
 The parameters without default values are mandatory to run the file.  
-Execute the command `python3 -m run.run_log_key_detection_model.py -h` to 
+Execute the command `python3 -m run.run_log_key_detection_model -h` to 
 display the arguments.
 Example of execution:
 ```sh
@@ -209,10 +209,12 @@ numerical, we used a synthetic data. In general, it should be provided a
 different matrix with all the parameters for each log key derived from the log 
 parser stage.
  
-To run the `run_parameter_detection.py` file, set the following parameters in 
-the command line:
+To run the `run_parameter_detection_model.py` file, set the following parameters 
+in the command line:
 + `input_file`: path of the input dataset to parse, with all the parameters of a
  specific log key message.
++ `output_path`: path of the directory where to save the trained model.
+ Default path: `artifacts/log_par_model_result`.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 5.
 + `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
@@ -230,13 +232,15 @@ results. If empty any board is stored.
 + `alpha`: confidence level of the confidence interval. Default value se to 
 0.95.
 
-Execute the command `python3 -m run.run_parameter_detection.py -h` to display 
-the arguments.
+The model is saved in `h5` format with the name `log_par_model.h5` in the 
+directory provided.
+Execute the command `python3 -m run.run_parameter_detection_model -h` to 
+display the arguments.
 Example of execution:
 ```sh
-python3 -m run_parameter_detection --input_file data/dataset.json \
+python3 -m run.run_parameter_detection_model --input_file data/dataset.json \
 --output_path model_result \
---output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
+--window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
 ### Tensorboard
@@ -281,22 +285,21 @@ We stored a sample of the dataset in the `data` folder, called
 ### Commands:
 + Drain: 
 ```sh 
-python3 -m run.run_drain --input_file data/sample_batrasio.log \
---output_path batrasio_result
+python3 -m run.run_drain --input_file data/sample_batrasio.log 
 ```
 + Log Key anomaly detection:
 ```sh
 python3 -m run.run_log_key_detection_model \
---input_file batrasio_result/data.json \
---output_path model_result \
---output_file model.h5 --window_size 10 --max_epochs 100 --train_ratio 0.5 \
+--window_size 10 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
+```
++ Workflow:
+```sh
+python3 -m run.run_workflow --train_ratio 0.5 --val_ratio 0.75
 ```
 + Parameter value anomaly detection:
 ```sh
-python3 -m run.run_parameter_detection --input_file data/dataset.json \
---output_path model_result \
---output_file model.h5 --window_size 12 --max_epochs 100 --train_ratio 0.5 \
+python3 -m run.run_parameter_detection_model --input_file data/dataset.json \
+--window_size 12 --max_epochs 100 --train_ratio 0.5 \
 --val_ratio 0.75 --out_tensorboard_path logdir
 ```
-
