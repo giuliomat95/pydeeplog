@@ -172,7 +172,7 @@ results. If empty any board is stored. Default value set to `None`.
 The model is saved in `h5` format with the name `log_key_model.h5` in the 
 directory provided.
 The parameters without default values are mandatory to run the file.  
-Execute the command `python3 -m run.run_log_key_detection_model.py -h` to 
+Execute the command `python3 -m run.run_log_key_detection_model -h` to 
 display the arguments.
 Example of execution:
 ```sh
@@ -234,7 +234,7 @@ results. If empty any board is stored.
 
 The model is saved in `h5` format with the name `log_par_model.h5` in the 
 directory provided.
-Execute the command `python3 -m run.run_parameter_detection_model.py -h` to 
+Execute the command `python3 -m run.run_parameter_detection_model -h` to 
 display the arguments.
 Example of execution:
 ```sh
