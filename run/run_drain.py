@@ -7,7 +7,6 @@ from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
 import logging
 import argparse
-import pickle
 import json
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -67,9 +66,10 @@ def run_drain(logger, input_file, output_path):
         json.dump(result, f)
     with open(os.path.join(output_path, 'templates.json'), 'w') as g:
         json.dump(templates, g)
-    # Save the Drain tree object in a pickle file
-    with open(os.path.join(output_path, 'drain_tree.pickle'), 'wb') as h:
-        pickle.dump(template_miner.drain.root_node, h)
+    # Save the Drain tree object in a JSON file
+    with open(os.path.join(output_path, 'drain_tree.json'), 'w') as h:
+        drain_serialized = drain.serialize_drain()
+        json.dump(drain_serialized, h)
 
 
 if __name__ == '__main__':
