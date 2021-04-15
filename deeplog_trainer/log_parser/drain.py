@@ -54,7 +54,7 @@ class Drain:
         return result
 
     def serialize_drain(self):
-        clusters = [{'cluster_Id': cluster.cluster_id,
+        clusters = [{'clusterId': cluster.cluster_id,
                      'logTemplateTokens': cluster.log_template_tokens}
                     for cluster in self.template_miner.drain.clusters]
         serialized = {'version': version('drain3'),
@@ -64,22 +64,21 @@ class Drain:
                           self.template_miner.drain.max_children,
                       'delimiters': self.template_miner.drain.extra_delimiters,
                       'clusters': clusters,
-                      'id_counter': len(clusters),
                       'root':
-                          self.serialize_node(
+                          self._serialize_node(
                               self.template_miner.drain.root_node)
                       }
         return serialized
 
-    def serialize_node(self, node):
+    def _serialize_node(self, node):
         tree_serialized = {
             'depth': node.depth,
             'key': node.key,
-            'keyToChildNode': {child.key: self.serialize_node(child)
+            'keyToChildNode': {child.key: self._serialize_node(child)
                                if len(node.key_to_child_node) > 0
                                else {}
                                for child in node.key_to_child_node.values()},
-            'clusters': [{'cluster_Id': cluster.cluster_id,
+            'clusters': [{'clusterId': cluster.cluster_id,
                           'logTemplateTokens': cluster.log_template_tokens}
                          for cluster in node.clusters]
         }

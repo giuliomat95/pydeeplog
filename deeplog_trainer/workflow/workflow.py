@@ -194,14 +194,10 @@ class WorkflowBuilder:
         Initial call: _build_path(parent: root node, seq: array with token IDs,
         is_start: True)
         """
-        if explored_edges is None:
-            explored_edges = {}
-        if ref_seq is None:
-            ref_seq = []
-        if workflow_path is None:
-            workflow_path = []
-        if ref_workflows is None:
-            ref_workflows = []
+        explored_edges = {} if explored_edges else explored_edges
+        ref_seq = [] if ref_seq is None else ref_seq
+        workflow_path = [] if workflow_path is None else workflow_path
+        ref_workflows = [] if ref_workflows is None else ref_workflows
         parent = network.get_node(parent_idx)
 
         if len(seq) == 0:
