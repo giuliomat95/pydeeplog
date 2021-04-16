@@ -57,6 +57,7 @@ tensorboard-plugin-wit==1.7.0
 tensorflow==2.2.0
 tensorflow-estimator==2.2.0
 termcolor==1.1.0
+testfixtures==6.17.1
 threadpoolctl==2.1.0
 toml==0.10.2
 urllib3==1.26.4

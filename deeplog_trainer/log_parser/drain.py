@@ -1,5 +1,5 @@
 import re
-from importlib.metadata import version
+import json
 
 
 class Drain:
@@ -54,16 +54,18 @@ class Drain:
         return result
 
     def serialize_drain(self):
-        clusters = [{'clusterId': cluster.cluster_id,
-                     'logTemplateTokens': cluster.log_template_tokens}
-                    for cluster in self.template_miner.drain.clusters]
-        serialized = {'version': version('drain3'),
+        serialized = {'version': '0.0.1',
                       'depth': self.template_miner.drain.depth,
                       'similarityThreshold': self.template_miner.drain.sim_th,
                       'maxChildrenPerNode':
                           self.template_miner.drain.max_children,
-                      'delimiters': self.template_miner.drain.extra_delimiters,
-                      'clusters': clusters,
+                      'delimiters':
+                          self.template_miner.drain.extra_delimiters,
+                      'masking':
+                          json.loads(self.template_miner.config.get(
+                              'MASKING',
+                              'masking',
+                              fallback="[]")),
                       'root':
                           self._serialize_node(
                               self.template_miner.drain.root_node)
@@ -78,8 +80,9 @@ class Drain:
                                if len(node.key_to_child_node) > 0
                                else {}
                                for child in node.key_to_child_node.values()},
-            'clusters': [{'clusterId': cluster.cluster_id,
-                          'logTemplateTokens': cluster.log_template_tokens}
-                         for cluster in node.clusters]
+            'clusters': [
+                {'clusterId': self.cluster_id_to_num(cluster.cluster_id),
+                 'logTemplateTokens': cluster.log_template_tokens}
+                for cluster in node.clusters]
         }
         return tree_serialized
