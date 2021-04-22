@@ -1,31 +1,9 @@
-import re
-import json
 from deeplog_trainer import SERIAL_DRAIN_VERSION
 
 
 class Drain:
     def __init__(self, template_miner):
         self.template_miner = template_miner
-
-    def get_parameters(self, content, template):
-        """
-        Given the entire message and its template, it return a list of words
-        masked in the template (what we call 'the variable part' of the message)
-        """
-        content = re.sub(r"\t+", r' ', content)
-        content = re.sub(r" +", r' ', content)
-        template_regex = re.sub(r"<.{1,5}>", "<*>", template)
-        if "<*>" not in template_regex: return []
-        template_regex = re.sub(r'([^A-Za-z0-9])', r'\\\1', template_regex)
-        template_regex = re.sub(r'\\\t+', r'\t', template_regex)
-        # Replace any '\ ' by ' '
-        template_regex = re.sub(r'\\ +', r' ', template_regex)
-        template_regex = "^" + template_regex.replace("\<\*\>", "(.*?)") + "$"
-        parameter_list = re.findall(template_regex, content)
-        parameter_list = parameter_list[0] if parameter_list else ()
-        parameter_list = list(parameter_list) if \
-            isinstance(parameter_list, tuple) else [parameter_list]
-        return parameter_list
 
     def add_message(self, msg):
         """
@@ -36,7 +14,8 @@ class Drain:
         cluster = self.template_miner.add_log_message(msg)
         template = cluster['template_mined']
         template_id = cluster['cluster_id']
-        parameter_list = self.get_parameters(msg, template)
+        parameter_list = self.template_miner.get_parameter_list(
+            log_template=template, content=msg)
         result = {
             'template_id': template_id,
             'template': template,
