@@ -30,8 +30,7 @@ def run_drain(logger, input_file, output_path, config_path):
 
     if 'regex' in parser.options('ADAPTER_PARAMS'):
         adapter_params['regex'] = ast.literal_eval(adapter_params['regex'])
-
-    if 'delta' in parser.options('ADAPTER_PARAMS'):
+    elif 'delta' in parser.options('ADAPTER_PARAMS'):
         adapter_params['delta'] = ast.literal_eval(adapter_params['delta'])
 
     adapter = adapter_factory.build_adapter(**adapter_params)
@@ -48,8 +47,8 @@ def run_drain(logger, input_file, output_path, config_path):
             match = regex.search(line.strip())
             message = match.group('Content')
             drain_result = drain.add_message(message)
-            sessions = session_storage.get_sessions(
-                sess_id, drain_result['template_id'])
+            sessions = session_storage.get_sessions(sess_id,
+                                                    drain_result['template_id'])
             templates = session_storage.get_templates(
                 drain_result['template_id'], drain_result['template'])
             parameters = session_storage.get_parameters(sess_id,

@@ -68,8 +68,7 @@ class Drain:
             'depth': depth,
             'key': token,
             'children': {
-                token: self._serialize_node(token, child, depth + 1
-                                            )
+                token: self._serialize_node(token, child, depth + 1)
                 if len(node.key_to_child_node) > 0
                 else {}
                 for token, child in node.key_to_child_node.items()
