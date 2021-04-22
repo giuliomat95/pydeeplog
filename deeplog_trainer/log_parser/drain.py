@@ -27,7 +27,7 @@ class Drain:
         masking = []
         for instruction in self.template_miner.config.masking_instructions:
             masking.append({'regex_pattern': instruction.regex_pattern,
-                            'mask_with': instruction.mask_with})
+                            'mask_with': '<' + instruction.mask_with + '>'})
         serialized = {'version': SERIAL_DRAIN_VERSION,
                       'depth': self.template_miner.drain.depth + 2,
                       'similarityThreshold': self.template_miner.drain.sim_th,

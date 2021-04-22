@@ -29,19 +29,6 @@ def get_logs():
         return data[0:3]
 
 
-@pytest.mark.parametrize("log", get_log())
-def test_get_parameters(log, drain, logformat='<Pid>  <Content>'):
-    headers, regex = ParseMethods.generate_logformat_regex(logformat=logformat)
-    match = regex.search(log.strip())
-    message = match.group('Content')
-    result = drain.add_message(message)
-    template = result['template']
-    params = result['params']
-    # The number of tokens masked with an asterisk in the template message must
-    # be equal to the length of the list that gather them.
-    assert len(re.findall(r'<[^<>]+>', template)) == len(params)
-
-
 def get_expected_result():
     result = {'version': SERIAL_DRAIN_VERSION,
               'depth': 4,
@@ -51,12 +38,12 @@ def get_expected_result():
               'masking': [{"regex_pattern":
                                "((?<=[^A-Za-z0-9])|^)(([0-9a-f]{2,}:)"
                                "{3,}([0-9a-f]{2,}))((?=[^A-Za-z0-9])|$)",
-                           "mask_with": "ID"},
+                           "mask_with": "<ID>"},
                           {"regex_pattern":
                                "((?<=[^A-Za-z0-9])|^)(\\d{1,3}\\.\\"
                                "d{1,3}\\.\\d{1,3}\\.\\d{1,3})"
                                "((?=[^A-Za-z0-9])|$)",
-                           "mask_with": "IP"}]}
+                           "mask_with": "<IP>"}]}
     no_msg_result = {**result, 'root': {"depth": 0, "key": "root",
                                         'children': {},
                                         'clusters': []}}
