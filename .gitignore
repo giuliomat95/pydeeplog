@@ -3,6 +3,7 @@
 venv
 .ipynb_checkpoints
 __pycache__
+.coverage
 
 # IDE
 .idea
@@ -10,8 +11,8 @@ __pycache__
 # Mac OS
 .DS_Store
 
-# Coverage
-.coverage
-
 # Results
 artifacts/
+
+# Drain
+drain.ini

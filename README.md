@@ -141,9 +141,12 @@ Available parameters are:
 Run the following code from terminal. The arguments `--input_file` and 
 `--output_path` are respectively the filepath of the data to be parsed and the 
 name of the folder where the results will be saved. The default output path is
-`artifacts/drain_result`.
+`artifacts/drain_result`. The argument `--config_path`, instead, is the filepath
+ of the config file. The default configuration file is `drain.ini` located in 
+ the root folder.
 ```sh
-python3 -m run.run_drain --input_file data/{filename}.log
+python3 -m run.run_drain --input_file data/{filename}.log \
+--config_file drain.ini
 ```
 
 ### Run Log key anomaly detection Model

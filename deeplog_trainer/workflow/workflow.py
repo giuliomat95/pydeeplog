@@ -187,13 +187,17 @@ class WorkflowBuilder:
         return added_workflows
 
     def _build_path(self, network, parent_idx, seq, is_start, back_steps,
-                    ref_seq=[], ref_workflows=[], workflow_path=[],
-                    explored_edges={}):
+                    ref_seq=None, ref_workflows=None, workflow_path=None,
+                    explored_edges=None):
         """
         Recursive method to build workflow path.
         Initial call: _build_path(parent: root node, seq: array with token IDs,
         is_start: True)
         """
+        explored_edges = {} if explored_edges else explored_edges
+        ref_seq = [] if ref_seq is None else ref_seq
+        workflow_path = [] if workflow_path is None else workflow_path
+        ref_workflows = [] if ref_workflows is None else ref_workflows
         parent = network.get_node(parent_idx)
 
         if len(seq) == 0:
