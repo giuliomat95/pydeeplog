@@ -13,6 +13,3 @@ __pycache__
 
 # Results
 artifacts/
-
-# Drain
-drain.ini

@@ -64,7 +64,6 @@ class WorkflowBuilder:
         for i in range(n_items):
             similar_seqs.append(
                 [original_dataset[i]])  # Copy sequences from original dataset
-            # This copy in a list a list of list of sequences. weird
         for offset in range(1, n_items):
             self.logger.info('Searching similar sequences: {} / {}...'.format(
                 offset, n_items - 1))
