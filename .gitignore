@@ -15,4 +15,4 @@ __pycache__
 artifacts/
 
 # Drain
-drain.ini
+sample_drain.ini

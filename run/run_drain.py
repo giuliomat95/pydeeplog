@@ -15,14 +15,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
-def run_drain(logger, input_file, output_path, config_path):
+def run_drain(logger, input_file, output_path, config_file):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     config = TemplateMinerConfig()
-    config.load(config_path)
+    config.load(config_file)
     template_miner = TemplateMiner(config=config)
     adapter_factory = AdapterFactory()
     parser = configparser.ConfigParser()
-    parser.read(os.path.join(config_path))
+    parser.read(os.path.join(config_file))
     adapter_params = dict(parser['ADAPTER_PARAMS'])
     adapter_params.setdefault('anomaly_labels', '[]')
     adapter_params['anomaly_labels'] = ast.literal_eval(
@@ -92,9 +92,8 @@ if __name__ == '__main__':
                         help="Put the name of the directory where the results "
                              "will be saved",
                         default='artifacts/drain_result')
-    parser.add_argument("--config_path", type=str,
-                        help="Put the filepath of the config file",
-                        default='drain.ini')
+    parser.add_argument("--config_file", type=str,
+                        help="Put the filepath of the config file")
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
     try:
@@ -103,4 +102,4 @@ if __name__ == '__main__':
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
 
-    run_drain(logger, args.input_file, args.output_path, args.config_path)
+    run_drain(logger, args.input_file, args.output_path, args.config_file)

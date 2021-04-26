@@ -55,8 +55,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str,
                         help="Put the input json dataset filepath from root "
-                             "folder",
-                        default='artifacts/drain_result/data.json')
+                             "folder")
     parser.add_argument("--window_size", type=int,
                         help="Put the window_size parameter", default=10)
     parser.add_argument("--min_length", type=int,

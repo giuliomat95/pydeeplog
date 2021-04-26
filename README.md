@@ -141,19 +141,18 @@ Available parameters are:
 Run the following code from terminal. The arguments `--input_file` and 
 `--output_path` are respectively the filepath of the data to be parsed and the 
 name of the folder where the results will be saved. The default output path is
-`artifacts/drain_result`. The argument `--config_path`, instead, is the filepath
- of the config file. The default configuration file is `drain.ini` located in 
- the root folder.
+`artifacts/drain_result`. The argument `--config_file`, instead, is the filepath
+ of the config file.
 ```sh
-python3 -m run.run_drain --input_file data/{filename}.log \
---config_path drain.ini
+python3 -m run.run_drain \
+--input_file data/{filename}.log \
+--config_file sample_drain.ini
 ```
 
 ### Run Log key anomaly detection Model
 To run the `run_log_key_detection_model.py` file, set the following parameters 
 in the command line:
-+ `input_file`: path of the input json dataset to parse. Default path: 
-`artifacts/drain_result/data.json`.
++ `input_file`: path of the input json dataset to parse.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
 + `min_length`: the minimum length of a sequence to be parsed. Default value set
@@ -179,9 +178,13 @@ Execute the command `python3 -m run.run_log_key_detection_model -h` to
 display the arguments.
 Example of execution:
 ```sh
-python3 -m run.run_log_key_detection_model --window_size 12 \
---max_epochs 100 --train_ratio 0.5 \
---val_ratio 0.75 --out_tensorboard_path logdir
+python3 -m run.run_log_key_detection_model \
+--input_file artifacts/drain_result/data.json \
+--window_size 12 \
+--max_epochs 100 \
+--train_ratio 0.5 \
+--val_ratio 0.75 \
+--out_tensorboard_path logdir
 ```
 
 ### Run workflows model
@@ -202,7 +205,9 @@ line:
 
 Example of execution:
 ```sh
-python3 -m run.run_workflow --train_ratio 0.5 --val_ratio 0.75
+python3 -m run.run_workflow \
+--train_ratio 0.5 \
+--val_ratio 0.75
 ```
 
 ### Run parameter value anomaly detection model
@@ -241,10 +246,14 @@ Execute the command `python3 -m run.run_parameter_detection_model -h` to
 display the arguments.
 Example of execution:
 ```sh
-python3 -m run.run_parameter_detection_model --input_file data/dataset.json \
+python3 -m run.run_parameter_detection_model \
+--input_file data/dataset.json \
 --output_path model_result \
---window_size 12 --max_epochs 100 --train_ratio 0.5 \
---val_ratio 0.75 --out_tensorboard_path logdir
+--window_size 5 \
+--max_epochs 100 \
+--train_ratio 0.5 \
+--val_ratio 0.75 \
+--out_tensorboard_path logdir
 ```
 ### Tensorboard
 
@@ -288,21 +297,32 @@ We stored a sample of the dataset in the `data` folder, called
 ### Commands:
 + Drain: 
 ```sh 
-python3 -m run.run_drain --input_file data/sample_batrasio.log 
+python3 -m run.run_drain \
+--input_file data/sample_batrasio.log 
 ```
 + Log Key anomaly detection:
 ```sh
 python3 -m run.run_log_key_detection_model \
---window_size 10 --max_epochs 100 --train_ratio 0.5 \
---val_ratio 0.75 --out_tensorboard_path logdir
+--input_file artifacts/drain_result/data.json \
+--window_size 10 \
+--max_epochs 100 \
+--train_ratio 0.5 \
+--val_ratio 0.75 \
+--out_tensorboard_path logdir
 ```
 + Workflow:
 ```sh
-python3 -m run.run_workflow --train_ratio 0.5 --val_ratio 0.75
+python3 -m run.run_workflow \
+--train_ratio 0.5 \
+--val_ratio 0.75 
 ```
 + Parameter value anomaly detection:
 ```sh
-python3 -m run.run_parameter_detection_model --input_file data/dataset.json \
---window_size 12 --max_epochs 100 --train_ratio 0.5 \
---val_ratio 0.75 --out_tensorboard_path logdir
+python3 -m run.run_parameter_detection_model \
+--input_file data/dataset.json \
+--window_size 5 \
+--max_epochs 100 \
+--train_ratio 0.5 \
+--val_ratio 0.75 \
+--out_tensorboard_path logdir
 ```
