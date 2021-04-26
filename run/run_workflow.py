@@ -19,11 +19,11 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
     logger.info('Number of nodes created: {}'.format(len(network.get_nodes())))
     network_dict = {}
     for node_idx, node in network.get_nodes().items():
-        network_dict[str(node_idx)] = {'value': node.get_value(),
-                                       'children': node.get_children(),
-                                       'parents': node.get_parents(),
-                                       'is_start': node.is_start(),
-                                       'is_end': node.is_end()}
+        network_dict[node_idx] = {'value': node.get_value(),
+                                  'children': node.get_children(),
+                                  'parents': node.get_parents(),
+                                  'is_start': node.is_start(),
+                                  'is_end': node.is_end()}
     workflow_evaluator = WorkflowEvaluator(logger, network_dict)
     matches = workflow_evaluator.evaluate(test_dataset)
     scores = workflow_evaluator.compute_scores(matches)

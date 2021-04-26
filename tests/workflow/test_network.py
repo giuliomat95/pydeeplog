@@ -4,15 +4,15 @@ from deeplog_trainer.workflow.network import RootNode, Network
 
 def get_data():
     # The function provides a tuple of data and expected values for each test
-    return [([], [0], [None], [False], [False], [[]]),
-            ([dict(value=1, is_start=True, parent_idx=0), dict(value=5),
-              dict(value=5, parent_idx=1),
-              dict(value=4, is_end=True, parent_idx=1), dict(value=7)],
-             [1, 2, 3, 4, 5],
+    return [([], ["root"], [None], [False], [False], [[]]),
+            ([dict(value=1, is_start=True, parent_idx="root"), dict(value=5),
+              dict(value=5, parent_idx="node-1"),
+              dict(value=4, is_end=True, parent_idx="node-1"), dict(value=7)],
+             ["node-1", "node-2", "node-3", "node-4", "node-5"],
              [1, 5, 5, 4, 7],
              [True, False, False, False, False],
              [False, False, False, True, False],
-             [[0], [], [1], [1], []])]
+             [["root"], [], ["node-1"], ["node-1"], []])]
 
 @pytest.mark.parametrize("nodes_data, expected_new_idx, expected_value, "
                          "expected_start, expected_end, expected_parent_idx",

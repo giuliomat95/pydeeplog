@@ -89,11 +89,12 @@ class WorkflowBuilder:
                     original_dataset[(match + offset) % n_items])
         return similar_seqs
 
-    def _find_path(self, network, node_idx, seq, found_workflow=[]):
+    def _find_path(self, network, node_idx, seq, found_workflow=None):
         """
         Finds a path of nodes for a given sequence, recursively. Returns an
         empty list if the path does not exists.
         """
+        found_workflow = [] if found_workflow is None else found_workflow
         if len(seq) == 0:
             return found_workflow
         node = network.get_node(node_idx)
@@ -327,7 +328,7 @@ class WorkflowEvaluator:
 
     def evaluate(self, dataset):
         self.logger.info('Evaluating workflows...')
-        root_node = self.network['0']
+        root_node = self.network['root']
         results = [self._evaluate_seq(root_node, seq) for seq in dataset]
         return results
 
