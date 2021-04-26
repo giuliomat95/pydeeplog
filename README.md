@@ -298,7 +298,8 @@ We stored a sample of the dataset in the `data` folder, called
 + Drain: 
 ```sh 
 python3 -m run.run_drain \
---input_file data/sample_batrasio.log 
+--input_file data/sample_batrasio.log \
+--config_file sample_drain.ini
 ```
 + Log Key anomaly detection:
 ```sh
