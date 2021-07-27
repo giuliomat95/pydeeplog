@@ -111,8 +111,8 @@ class DataPreprocess:
         training, validation and testing.
         :param: dataset_size: length of dataset
         :param: train_ratio (float): defines the subset for training.
-        :param: val_ratio (float): defines the subset for validation (must be greater
-        than train_ratio).
+        :param: val_ratio (float): defines the subset for validation
+        (must be greater than train_ratio).
         :return three subsets of the input dataset.
         """
         train_idx, val_idx, test_idx = \

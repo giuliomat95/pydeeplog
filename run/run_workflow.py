@@ -20,7 +20,8 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
     network_dict = {}
     for node_idx, node in network.get_nodes().items():
         network_dict[node_idx] = {'value': node.get_value(),
-                                  'children': node.get_children(),
+                                  'children': {y: int(x) for x, y in
+                                               node.get_children().items()},
                                   'parents': node.get_parents(),
                                   'is_start': node.is_start(),
                                   'is_end': node.is_end()}
