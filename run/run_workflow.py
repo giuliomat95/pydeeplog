@@ -46,9 +46,8 @@ if __name__ == '__main__':
     parser.add_argument("--output_path", type=str,
                         help="Put the path of the output directory",
                         default='artifacts/workflows')
-    parser.add_argument("--min_length", type=int,
-                        help="Put the minimum length of a sequence to be "
-                             "parsed", default=4)
+    parser.add_argument("--window_size", type=int,
+                        help="Put the window_size parameter", default=10)
     parser.add_argument("--train_ratio", type=float,
                         help="Put the percentage of dataset size to define the"
                              "train set", default=0.7)
@@ -69,5 +68,5 @@ if __name__ == '__main__':
         exit(1)
 
     run_workflows(logger, args.input_file, args.output_path,
-                  args.min_length, args.train_ratio, args.val_ratio,
+                  args.window_size, args.train_ratio, args.val_ratio,
                   args.threshold, args.back_steps)
