@@ -16,7 +16,7 @@ class SessionAdapterInterface(metaclass=ABCMeta):
         pass
 
 
-class OnlyIdentifier(SessionAdapterInterface):
+class OnlyRegex(SessionAdapterInterface):
     """
     This Class implements the SessionAdapter interface in the case only an
     identifier in regex format is provided in order to group the logs in
@@ -50,7 +50,7 @@ class OnlyIdentifier(SessionAdapterInterface):
         return self.d[identifier], self.anomaly_flag
 
 
-class IdentifierAndDelimiter(SessionAdapterInterface):
+class RegexAndDelimiter(SessionAdapterInterface):
     """
     This Class implements the SessionAdapter interface in the case, in order to
     group the logs in different sessions, both an identifier in regex format and
@@ -215,7 +215,7 @@ class AdapterFactory:
     """The factory class"""
     ADAPTER_TYPE_DELIMITER = 'only_delimiter'
     ADAPTER_TYPE_DELIMITER_AND_REGEX = 'delimiter+regex'
-    ADAPTER_TYPE_REGEX = 'only_identifier'
+    ADAPTER_TYPE_REGEX = 'only_regex'
     ADAPTER_TYPE_INTERVAL_TIME = 'interval_time'
 
     def build_adapter(self, adapter_type: str, **kwargs):
@@ -225,14 +225,14 @@ class AdapterFactory:
                                  anomaly_labels=kwargs['anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_REGEX:
             self._validate_regex_kwargs(kwargs)
-            return OnlyIdentifier(regex=kwargs['regex'],
-                                  anomaly_labels=kwargs['anomaly_labels'])
+            return OnlyRegex(regex=kwargs['regex'],
+                             anomaly_labels=kwargs['anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_DELIMITER_AND_REGEX:
             self._validate_regex_and_delimiter_kwargs(kwargs)
-            return IdentifierAndDelimiter(regex=kwargs['regex'],
-                                          delimiter=kwargs['delimiter'],
-                                          anomaly_labels=kwargs[
-                                              'anomaly_labels'])
+            return RegexAndDelimiter(regex=kwargs['regex'],
+                                     delimiter=kwargs['delimiter'],
+                                     anomaly_labels=kwargs[
+                                         'anomaly_labels'])
         if adapter_type == AdapterFactory.ADAPTER_TYPE_INTERVAL_TIME:
             self._validate_time_interval_kwargs(kwargs)
             return TimeInterval(logformat=kwargs['logformat'],
