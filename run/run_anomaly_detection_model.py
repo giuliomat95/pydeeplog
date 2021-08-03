@@ -92,11 +92,11 @@ def run_drain(logger, input_file, output_path, config_file, window_size):
     with open(os.path.join(output_path, 'session_grouper_conf.json'),
               'w') as sg:
         sg_dict = {'sessionGrouperType': "RegexSessionGrouper",
-                   'textRegex': text_regex.pattern,
+                   'textRegex': text_regex.pattern.replace('?P', '?'),
                    'sessionIdRegex': adapter_params.setdefault('regex', ''),
                    'sessionDelimiters': [adapter_params.setdefault('delimiter',
                                                                    '')],
-                   'window_size': window_size
+                   'windowSize': window_size
                    }
         json.dump(sg_dict, sg)
 
@@ -141,7 +141,7 @@ def run_model(logger, window_size, output_path,
     # Save config values in a json file:
     with open(os.path.join(output_path, 'deeplog_conf.json'), 'w') as f:
         par = dict(numTemplates=num_tokens - 3, topCandidates=top_k,
-                   window_size=window_size)
+                   windowSize=window_size)
         json.dump(par, f)
     # Save empty workflow in json file
     with open(os.path.join(output_path, 'workflows.json'), 'w') as f:
