@@ -102,9 +102,8 @@ and is abnormal otherwise.
 
 ## Commands
 
-### Run Drain
-Before running Drain, set the parameters in the config file `drain3.ini` in the
-working directory. \
+### Run Drain + Log Key Anomaly Detection
+Before running Drain, set the parameters in a config file `.ini`. \
 Available parameters are:
 
 - `[DRAIN]/sim_th` - similarity threshold (default 0.4)
@@ -138,27 +137,13 @@ Available parameters are:
 - `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
     '\<Pid> \<Content>'. It must contain the word 'Content'.
 
-Run the following code from terminal. The arguments `--input_file` and 
-`--output_path` are respectively the filepath of the data to be parsed and the 
-name of the folder where the results will be saved. The default output path is
-`artifacts/drain_result`. The argument `--config_file`, instead, is the filepath
- of the config file.
-```sh
-python3 -m run.run_drain \
---input_file data/{filename}.log \
---config_file sample_drain.ini
-```
-
-### Run Log key anomaly detection Model
-To run the `run_log_key_detection_model.py` file, set the following parameters 
+To run the `run_anomaly_detection_model.py` file, set the following parameters 
 in the command line:
-+ `input_file`: path of the input json dataset to parse.
++ `input_file`: filepath of the log data to be parsed.
++ `output_path`: filepath of the zipped output file.
++ `config_file`: filepath of the config file.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
-+ `min_length`: the minimum length of a sequence to be parsed. Default value set
- to 4.
-+ `output_path`: path of the directory where to save the trained model, as well 
-as the config values. Default path: `artifacts/log_key_model_result`.
 + `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
 + `val_ratio`: it defines the validation set. Default value set to 0.85.
@@ -170,16 +155,20 @@ be stopped. Default value set to 7.
  the early_stop. Default value set to 50.
 + `out_tensorboard_path`: name of the folder where to save the tensorboard 
 results. If empty any board is stored. Default value set to `None`.
++ `top_k`: number of top candidates to estimate the number of anomalies. 
+Default value set to 10.
 
-The model is saved in `h5` format with the name `log_key_model.h5` in the 
-directory provided.
+The model is saved in `h5` format with the name `logkey_model.h5` in the 
+zipped file provided.
 The parameters without default values are mandatory to run the file.  
 Execute the command `python3 -m run.run_log_key_detection_model -h` to 
 display the arguments.
 Example of execution:
 ```sh
-python3 -m run.run_log_key_detection_model \
---input_file artifacts/drain_result/data.json \
+python3 -m run.run_anomaly_detection_model \
+--input_file  data/sample_hdfs.log \
+--output_path hdfs_deeplog_model.zip
+--config_file hdfs_config.ini
 --window_size 12 \
 --max_epochs 100 \
 --train_ratio 0.5 \
@@ -303,13 +292,16 @@ python3 -m run.run_drain \
 ```
 + Log Key anomaly detection:
 ```sh
-python3 -m run.run_log_key_detection_model \
---input_file artifacts/drain_result/data.json \
+python3 -m run.run_anomaly_detection_model \
+--input_file data/sample_batrasio.log \
+--output_path batrasio_deeplog_model.zip \
+--config_file batrasio_config.ini
 --window_size 10 \
 --max_epochs 100 \
 --train_ratio 0.5 \
 --val_ratio 0.75 \
 --out_tensorboard_path logdir
+--top_k 7
 ```
 + Workflow:
 ```sh

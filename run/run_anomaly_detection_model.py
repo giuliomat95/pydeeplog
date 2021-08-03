@@ -167,9 +167,10 @@ def zip_directory(dirname, zip_file_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_file", type=str,
-                        help="Put the input filepath from root folder")
+                        help="Put the input filepath of log data from root "
+                             "folder")
     parser.add_argument("--output_path", type=str,
-                        help="Put the path of the output directory")
+                        help="Put the filepath of the zipped output file")
     parser.add_argument("--config_file", type=str,
                         help="Put the filepath of the config file")
     parser.add_argument("--window_size", type=int,
