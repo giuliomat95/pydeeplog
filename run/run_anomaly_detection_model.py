@@ -94,8 +94,8 @@ def run_drain(logger, input_file, output_path, config_file, window_size):
         sg_dict = {'sessionGrouperType': "RegexSessionGrouper",
                    'textRegex': text_regex.pattern.replace('?P', '?'),
                    'sessionIdRegex': adapter_params.setdefault('regex', ''),
-                   'sessionDelimiters': [adapter_params.setdefault('delimiter',
-                                                                   '')],
+                   'sessionDelimiters': [adapter_params['delimiter']] if
+                   'delimiter' in adapter_params else [],
                    'windowSize': window_size
                    }
         json.dump(sg_dict, sg)
@@ -104,7 +104,6 @@ def run_drain(logger, input_file, output_path, config_file, window_size):
 def run_model(logger, window_size, output_path,
               LSTM_units, max_epochs, train_ratio, val_ratio,
               early_stop, batch_size, out_tensorboard_path, top_k):
-
     input_file = os.path.join(output_path, 'data.json')
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
         logger, input_file, window_size, train_ratio, val_ratio)
@@ -151,6 +150,7 @@ def run_model(logger, window_size, output_path,
                                  "is_start": False,
                                  "is_end": False}}
         json.dump(network_dict, f)
+
 
 def zip_directory(dirname, zip_file_name):
     with ZipFile(zip_file_name, 'w') as zip_obj:
