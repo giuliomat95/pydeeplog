@@ -30,8 +30,8 @@ class Drain:
                             'mask_with': '<' + instruction.mask_with + '>'})
         serialized = {'version': SERIAL_DRAIN_VERSION,
                       'depth': self.template_miner.drain.depth + 2,
-                      'similarityThreshold': self.template_miner.drain.sim_th,
-                      'maxChildrenPerNode':
+                      'similarity_threshold': self.template_miner.drain.sim_th,
+                      'max_children_per_node':
                           self.template_miner.drain.max_children,
                       'delimiters':
                           [' ', *self.template_miner.drain.extra_delimiters],
@@ -53,8 +53,8 @@ class Drain:
                 for token, child in node.key_to_child_node.items()
             },
             'clusters': [
-                {'clusterId': cluster_id,
-                 'logTemplateTokens':
+                {'cluster_id': cluster_id,
+                 'log_template_tokens':
                      list(self.template_miner.drain.id_to_cluster[
                          cluster_id].log_template_tokens)}
                 for cluster_id in node.cluster_ids]

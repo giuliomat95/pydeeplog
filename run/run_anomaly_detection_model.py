@@ -91,12 +91,12 @@ def run_drain(logger, input_file, output_path, config_file, window_size):
         json.dump(drain_serialized, h)
     with open(os.path.join(output_path, 'session_grouper_conf.json'),
               'w') as sg:
-        sg_dict = {'sessionGrouperType': "RegexSessionGrouper",
-                   'textRegex': text_regex.pattern.replace('?P', '?'),
-                   'sessionIdRegex': adapter_params.setdefault('regex', ''),
-                   'sessionDelimiters': [adapter_params['delimiter']] if
+        sg_dict = {'session_grouper_type': "RegexSessionGrouper",
+                   'text_regex': text_regex.pattern.replace('?P', '?'),
+                   'session_id_regex': adapter_params.setdefault('regex', ''),
+                   'session_delimiters': [adapter_params['delimiter']] if
                    'delimiter' in adapter_params else [],
-                   'windowSize': window_size
+                   'window_size': window_size
                    }
         json.dump(sg_dict, sg)
 
@@ -139,8 +139,8 @@ def run_model(logger, window_size, output_path,
     logger.info('- Accuracy: {:.4f}'.format(scores['accuracy']))
     # Save config values in a json file:
     with open(os.path.join(output_path, 'deeplog_conf.json'), 'w') as f:
-        par = dict(numTemplates=num_tokens - 3, topCandidates=top_k,
-                   windowSize=window_size)
+        par = dict(num_templates=num_tokens - 3, top_candidates=top_k,
+                   window_size=window_size)
         json.dump(par, f)
     # Save empty workflow in json file
     with open(os.path.join(output_path, 'workflows.json'), 'w') as f:
