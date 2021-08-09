@@ -4,7 +4,7 @@ import os
 import json
 
 from deeplog_trainer.workflow.workflow import WorkflowBuilder, WorkflowEvaluator
-from . import create_datasets
+from . import *
 
 
 def run_workflows(logger, input_file, output_path, min_length, train_ratio,
@@ -39,26 +39,8 @@ def run_workflows(logger, input_file, output_path, min_length, train_ratio,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input json dataset filepath from root "
-                             "folder",
-                        default='artifacts/drain_result/data.json')
-    parser.add_argument("--output_path", type=str,
-                        help="Put the path of the output directory",
-                        default='artifacts/workflows')
-    parser.add_argument("--window_size", type=int,
-                        help="Put the window_size parameter", default=10)
-    parser.add_argument("--train_ratio", type=float,
-                        help="Put the percentage of dataset size to define the"
-                             "train set", default=0.7)
-    parser.add_argument("--val_ratio", type=float,
-                        help="Put the percentage of dataset size to define the"
-                             "validation set", default=0.85)
-    parser.add_argument("--threshold", type=float,
-                        help="Put the similarity threshold", default=0.8)
-    parser.add_argument("--back-steps", type=int,
-                        help="Put the number of steps backwards to research"
-                             "similar workflows", default=1)
+    add_workflows_runner_args(parser)
+
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
     try:

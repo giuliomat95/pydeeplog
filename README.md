@@ -41,6 +41,7 @@ docker run --detach \
     --name deeplog-trainer \
     docker.devo.internal/dev/mlx/experiments/deeplog-trainer:latest
 ```
+
 ## Implementation details
 
 ### Log Parser stage: Drain
@@ -102,7 +103,24 @@ and is abnormal otherwise.
 
 ## Commands
 
+### Run all
+
+All the commands described here can be run with the following script:
+```sh
+python3 -m run.run_all \
+    --input_file ./data/sample_hdfs.log \
+    --output_path ./artifacts/hdfs_deeplog_model \
+    ...
+```
+
+The parameters available for this script are:
+- `input_file`: file with the RAW log data.
+- `output_path`: path to store partial files and final ZIP containing all them.
+- The rest of parameters are described in the subsection
+[Run Drain + Log Key Anomaly Detection](#Run_Drain_+_Log_Key_Anomaly_Detection).
+
 ### Run Drain + Log Key Anomaly Detection
+
 Before running Drain, set the parameters in a config file `.ini`. \
 Available parameters are:
 
@@ -144,7 +162,7 @@ in the command line:
 + `config_file`: filepath of the config file.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
-+ `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
++ `lstm_units`: number of units in each LSTM layer. Default value set to 64.
 + `train_ratio`: it defines the train set. Default value set to 0.7.
 + `val_ratio`: it defines the validation set. Default value set to 0.85.
 + `batch_size`: number of samples that will be propagated through the network. 
@@ -163,20 +181,22 @@ zipped file provided.
 The parameters without default values are mandatory to run the file.  
 Execute the command `python3 -m run.run_log_key_detection_model -h` to 
 display the arguments.
+
 Example of execution:
 ```sh
 python3 -m run.run_anomaly_detection_model \
---input_file  data/sample_hdfs.log \
---output_path hdfs_deeplog_model.zip
---config_file hdfs_config.ini
---window_size 12 \
---max_epochs 100 \
---train_ratio 0.5 \
---val_ratio 0.75 \
---out_tensorboard_path logdir
+    --input_file data/sample_hdfs.log \
+    --output_path artifacts/hdfs_deeplog_model \
+    --config_file hdfs_config.ini \
+    --window_size 12 \
+    --max_epochs 100 \
+    --train_ratio 0.5 \
+    --val_ratio 0.75 \
+    --out_tensorboard_path artifacts/hdfs_tensorboard
 ```
 
 ### Run workflows model
+
 To run the `run.workflow.py` file, set the following parameter in the command 
 line:
 + `input_file`: path of the input json dataset to parse. Default path: 
@@ -195,11 +215,12 @@ line:
 Example of execution:
 ```sh
 python3 -m run.run_workflow \
---train_ratio 0.5 \
---val_ratio 0.75
+    --train_ratio 0.5 \
+    --val_ratio 0.75
 ```
 
 ### Run parameter value anomaly detection model
+
 In order to evaluate the parameter value anomaly detection model, due to the 
 absence of a dataset with log messages whose parameter values are mainly 
 numerical, we used a synthetic data. In general, it should be provided a 
@@ -214,7 +235,7 @@ in the command line:
  Default path: `artifacts/log_par_model_result`.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 5.
-+ `LSTM_units`: number of units in each LSTM layer. Default value set to 64.
++ `lstm_units`: number of units in each LSTM layer. Default value set to 64.
 + `max_epochs`: maximum number of epochs if the process is not stopped before by
 the early_stop. Default value set to 100.
 + `train_ratio`: it defines the train set. Default value set to 0.5.
@@ -233,17 +254,19 @@ The model is saved in `h5` format with the name `log_par_model.h5` in the
 directory provided.
 Execute the command `python3 -m run.run_parameter_detection_model -h` to 
 display the arguments.
+
 Example of execution:
 ```sh
 python3 -m run.run_parameter_detection_model \
---input_file data/dataset.json \
---output_path model_result \
---window_size 5 \
---max_epochs 100 \
---train_ratio 0.5 \
---val_ratio 0.75 \
---out_tensorboard_path logdir
+    --input_file data/dataset.json \
+    --output_path model_result \
+    --window_size 5 \
+    --max_epochs 100 \
+    --train_ratio 0.5 \
+    --val_ratio 0.75 \
+    --out_tensorboard_path logdir
 ```
+
 ### Tensorboard
 
 To visualize the evolution of the loss/accuracy trend of the train/validation 
@@ -251,6 +274,7 @@ process, run the following code from the root folder:
 ```sh
 tensorboard --logdir logdir
 ```
+
 ### Tests
 
 Run tests with Pytest: from the root folder of the project run the following 
@@ -272,6 +296,7 @@ coverage html --include='./deeplog_trainer/*' -d './reports/coverage'
 ```
 
 ## Quick Example
+
 Let's see, for instance, how to apply, Deeplog on Batrasio system logs, a real 
 time data set provided by the Devo platform. \
 In Batrasio dataset, each session
@@ -284,38 +309,39 @@ We stored a sample of the dataset in the `data` folder, called
 `sample_batrasio.log`.
 
 ### Commands:
+
 + Drain: 
 ```sh 
 python3 -m run.run_drain \
---input_file data/sample_batrasio.log \
---config_file sample_drain.ini
+    --input_file data/sample_batrasio.log \
+    --config_file sample_drain.ini
 ```
 + Log Key anomaly detection:
 ```sh
 python3 -m run.run_anomaly_detection_model \
---input_file data/sample_batrasio.log \
---output_path batrasio_deeplog_model.zip \
---config_file batrasio_config.ini
---window_size 10 \
---max_epochs 100 \
---train_ratio 0.5 \
---val_ratio 0.75 \
---out_tensorboard_path logdir
---top_k 7
+    --input_file data/sample_batrasio.log \
+    --output_path batrasio_deeplog_model.zip \
+    --config_file batrasio_config.ini
+    --window_size 10 \
+    --max_epochs 100 \
+    --train_ratio 0.5 \
+    --val_ratio 0.75 \
+    --out_tensorboard_path logdir
+    --top_k 7
 ```
 + Workflow:
 ```sh
 python3 -m run.run_workflow \
---train_ratio 0.5 \
---val_ratio 0.75 
+    --train_ratio 0.5 \
+    --val_ratio 0.75 
 ```
 + Parameter value anomaly detection:
 ```sh
 python3 -m run.run_parameter_detection_model \
---input_file data/dataset.json \
---window_size 5 \
---max_epochs 100 \
---train_ratio 0.5 \
---val_ratio 0.75 \
---out_tensorboard_path logdir
+    --input_file data/dataset.json \
+    --window_size 5 \
+    --max_epochs 100 \
+    --train_ratio 0.5 \
+    --val_ratio 0.75 \
+    --out_tensorboard_path logdir
 ```
