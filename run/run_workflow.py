@@ -1,17 +1,12 @@
-import logging
 import argparse
-import os
-import json
 
 from deeplog_trainer.workflow.workflow import WorkflowBuilder, WorkflowEvaluator
 from . import *
 
 
-def run_workflows(logger, input_file, output_path, min_length, train_ratio,
-                  val_ratio, threshold, back_steps):
+def run_workflows(logger, output_path, train_dataset, test_dataset, threshold,
+                  back_steps):
     workflow_builder = WorkflowBuilder(logger)
-    train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
-        logger, input_file, min_length, train_ratio, val_ratio)
     workflows = workflow_builder.build_workflows(train_dataset.tolist(),
                                                  threshold=threshold,
                                                  back_steps=back_steps)
@@ -48,7 +43,8 @@ if __name__ == '__main__':
     except OSError as error:
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
-
-    run_workflows(logger, args.input_file, args.output_path,
-                  args.window_size, args.train_ratio, args.val_ratio,
+    train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
+        logger, args.input_file, args.window_size, args.train_ratio,
+        args.val_ratio)
+    run_workflows(logger, args.output_path, train_dataset, test_dataset,
                   args.threshold, args.back_steps)

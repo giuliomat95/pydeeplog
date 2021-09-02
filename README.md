@@ -103,23 +103,32 @@ and is abnormal otherwise.
 
 ## Commands
 
-### Run all
+### Run deeplog
 
-All the commands described here can be run with the following script:
+All the commands described below can be run with the following script:
 ```sh
-python3 -m run.run_all \
-    --input_file ./data/sample_hdfs.log \
-    --output_path ./artifacts/hdfs_deeplog_model \
+python3 -m run.run_deeplog \
+    --input_file data/{filename}.log \
+    --output_path  artifacts/deeplog_model \
+    --config_file config.ini \
+    --window_size 12 \
+    --max_epochs 100 \
+    --train_ratio 0.5 \
+    --val_ratio 0.75 \
+    --out_tensorboard_path artifacts/tensorboard
     ...
 ```
 
 The parameters available for this script are:
 - `input_file`: file with the RAW log data.
 - `output_path`: path to store partial files and final ZIP containing all them.
-- The rest of parameters are described in the subsection
-[Run Drain + Log Key Anomaly Detection](#Run_Drain_+_Log_Key_Anomaly_Detection).
+The default zipped file name is `deeplog_result.zip`.
+- The rest of parameters are described in the subsections, 
+[Run Drain](#Run Drain), 
+[Run Log key anomaly detection Model](#Run Log key anomaly detection Model) and
+[Run workflows model](#Run workflows model).
 
-### Run Drain + Log Key Anomaly Detection
+### Run Drain
 
 Before running Drain, set the parameters in a config file `.ini`. \
 Available parameters are:
@@ -155,11 +164,25 @@ Available parameters are:
 - `[ADAPTER_PARAMS]/logformat` - Format of the entry log. Example: 
     '\<Pid> \<Content>'. It must contain the word 'Content'.
 
-To run the `run_anomaly_detection_model.py` file, set the following parameters 
+Run the following code from terminal. The arguments --input_file and
+--output_path are respectively the filepath of the data to be parsed and the
+name of the folder where the results will be saved. The default output path is
+artifacts/drain_result. The argument --config_file, instead, is the filepath
+of the config file, while the --window_size is the length of chunks input of the 
+LSTM neural network.
+```sh
+python3 -m run.run_drain \
+--input_file data/{filename}.log \
+--config_file sample_drain.ini
+--window_size 10
+```
+
+### Run Log key anomaly detection Model
+To run the `run_log_key_detection_model.py` file, set the following parameters 
 in the command line:
+
 + `input_file`: filepath of the log data to be parsed.
 + `output_path`: filepath of the zipped output file.
-+ `config_file`: filepath of the config file.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
 + `lstm_units`: number of units in each LSTM layer. Default value set to 64.
@@ -179,20 +202,19 @@ Default value set to 10.
 The model is saved in `h5` format with the name `logkey_model.h5` in the 
 zipped file provided.
 The parameters without default values are mandatory to run the file.  
-Execute the command `python3 -m run.run_log_key_detection_model -h` to 
+Note that sequences shorter than window size's value are dropped from the model. 
+Execute the command `python3 -m run.run_log_key_detection_model -h` to
 display the arguments.
 
 Example of execution:
 ```sh
-python3 -m run.run_anomaly_detection_model \
-    --input_file data/sample_hdfs.log \
-    --output_path artifacts/hdfs_deeplog_model \
-    --config_file hdfs_config.ini \
-    --window_size 12 \
-    --max_epochs 100 \
-    --train_ratio 0.5 \
-    --val_ratio 0.75 \
-    --out_tensorboard_path artifacts/hdfs_tensorboard
+python3 -m run.run_log_key_detection_model \
+--input_file artifacts/drain_result/data.json \
+--window_size 12 \
+--max_epochs 100 \
+--train_ratio 0.5 \
+--val_ratio 0.75 \
+--out_tensorboard_path logdir
 ```
 
 ### Run workflows model
@@ -310,38 +332,15 @@ We stored a sample of the dataset in the `data` folder, called
 
 ### Commands:
 
-+ Drain: 
++ Deeplog: 
 ```sh 
-python3 -m run.run_drain \
+python3 -m run.run_deeplog \
     --input_file data/sample_batrasio.log \
-    --config_file sample_drain.ini
-```
-+ Log Key anomaly detection:
-```sh
-python3 -m run.run_anomaly_detection_model \
-    --input_file data/sample_batrasio.log \
-    --output_path batrasio_deeplog_model.zip \
-    --config_file batrasio_config.ini
+    --output_path artifacts/batrasio_deeplog_model \
+    --config_file batrasio_config.ini \
     --window_size 10 \
     --max_epochs 100 \
     --train_ratio 0.5 \
     --val_ratio 0.75 \
-    --out_tensorboard_path logdir
+    --out_tensorboard_path logdir \
     --top_k 7
-```
-+ Workflow:
-```sh
-python3 -m run.run_workflow \
-    --train_ratio 0.5 \
-    --val_ratio 0.75 
-```
-+ Parameter value anomaly detection:
-```sh
-python3 -m run.run_parameter_detection_model \
-    --input_file data/dataset.json \
-    --window_size 5 \
-    --max_epochs 100 \
-    --train_ratio 0.5 \
-    --val_ratio 0.75 \
-    --out_tensorboard_path logdir
-```
