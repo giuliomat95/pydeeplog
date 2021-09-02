@@ -43,8 +43,10 @@ def zip_directory(temp_path, zip_file_name):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    add_deeplog_runner_args(parser)
+    parser = argparse.ArgumentParser(conflict_handler='resolve')
+    add_drain_runner_args(parser)
+    add_logkey_model_runner_args(parser)
+    add_workflows_runner_args(parser)
     # Excluded at the moment from run-all script:
     # add_parameters_model_runner_args(parser)
     args = parser.parse_args()
