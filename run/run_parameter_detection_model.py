@@ -10,6 +10,8 @@ from deeplog_trainer.model.training import ModelTrainer
 from deeplog_trainer.model.model_manager import ModelManager
 from deeplog_trainer.parameter_detection.model_evaluator import ModelEvaluator
 
+from . import *
+
 
 def run_parameter_detection_model(logger, input_file, output_path, window_size,
                                   LSTM_units, max_epochs, train_ratio,
@@ -78,39 +80,8 @@ def run_parameter_detection_model(logger, input_file, output_path, window_size,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input json dataset filepath from root "
-                             "folder")
-    parser.add_argument("--output_path", type=str,
-                        help="Put the path of the output directory",
-                        default='artifacts/log_par_model_result')
-    parser.add_argument("--window_size", type=int,
-                        help="Put the window_size parameter", default=5)
-    parser.add_argument("--LSTM_units", type=int,
-                        help="Put the number of units in each LSTM layer",
-                        default=64)
-    parser.add_argument("--max_epochs", type=int,
-                        help="Put the maximum number of epochs if the process "
-                             "is not stopped before by the early_stop",
-                        default=100)
-    parser.add_argument("--train_ratio", type=float,
-                        help="Put the percentage of dataset size to define the"
-                             "train set", default=0.5)
-    parser.add_argument("--val_ratio", type=float,
-                        help="Put the percentage of dataset size to define the"
-                             " validation set", default=0.75)
-    parser.add_argument("--early_stop", type=int,
-                        help="Put the number of epochs with no improvement "
-                             "after which training will be stopped", default=7)
-    parser.add_argument("--batch_size", type=int,
-                        help="Put the number of samples that will be propagated"
-                             " through the network", default=16)
-    parser.add_argument("--out_tensorboard_path", type=str,
-                        help="Put the name of the folder where to save the "
-                             "tensorboard results if desired", default=None)
-    parser.add_argument("--alpha", type=float, help="confidence level of the "
-                                                    "confidence interval",
-                        default=0.95)
+    add_parameters_model_runner_args(parser)
+
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
     try:

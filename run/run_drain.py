@@ -1,21 +1,21 @@
+import argparse
+import ast
+
+import configparser
 from drain3.template_miner import TemplateMiner
 from drain3.template_miner_config import TemplateMinerConfig
-import ast
-import os
-import sys
+
 from deeplog_trainer.log_parser.adapter import AdapterFactory, ParseMethods
-from deeplog_trainer.log_parser.sessions import SessionStorage
 from deeplog_trainer.log_parser.drain import Drain
-import logging
-import argparse
-import json
-import configparser
+from deeplog_trainer.log_parser.sessions import SessionStorage
+
+from . import *
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
-def run_drain(logger, input_file, output_path, config_file):
+def run_drain(logger, input_file, output_path, config_file, window_size):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     config = TemplateMinerConfig()
     config.load(config_file)
@@ -36,15 +36,15 @@ def run_drain(logger, input_file, output_path, config_file):
     adapter = adapter_factory.build_adapter(**adapter_params)
     drain = Drain(template_miner)
     session_storage = SessionStorage()
-    logger.info(f"Drain3 started reading from {args.input_file}")
+    logger.info(f"Drain3 started reading from {input_file}")
     line_count = 0
     logformat = parser.get('ADAPTER_PARAMS', 'logformat')
-    headers, regex = ParseMethods.generate_logformat_regex(
+    headers, text_regex = ParseMethods.generate_logformat_regex(
         logformat=logformat)
     with open(os.path.join(root_path, input_file), 'r') as f:
         for line in f:
             sess_id, anomaly_flag = adapter.get_session_id(log=line)
-            match = regex.search(line.strip())
+            match = text_regex.search(line.strip())
             message = match.group('Content')
             drain_result = drain.add_message(message)
             sessions = session_storage.get_sessions(sess_id,
@@ -73,27 +73,30 @@ def run_drain(logger, input_file, output_path, config_file):
             result['data'].append(dict(template_seq=sessions[sess_id],
                                        template_params=parameters[sess_id],
                                        session_id=sess_id))
-
     with open(os.path.join(output_path, 'data.json'), 'w') as f:
         json.dump(result, f)
     with open(os.path.join(output_path, 'templates.json'), 'w') as g:
         json.dump(templates, g)
     # Save the Drain tree object in a JSON file
-    with open(os.path.join(output_path, 'drain_tree.json'), 'w') as h:
+    with open(os.path.join(output_path, 'drain.json'), 'w') as h:
         drain_serialized = drain.serialize_drain()
         json.dump(drain_serialized, h)
+    with open(os.path.join(output_path, 'session_grouper_conf.json'),
+              'w') as sg:
+        sg_dict = {'session_grouper_type': "RegexSessionGrouper",
+                   'text_regex': text_regex.pattern.replace('?P', '?'),
+                   'session_id_regex': adapter_params.setdefault('regex', ''),
+                   'session_delimiters': [adapter_params['delimiter']] if
+                   'delimiter' in adapter_params else [],
+                   'window_size': window_size
+                   }
+        json.dump(sg_dict, sg)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input filepath from root folder")
-    parser.add_argument("--output_path", type=str,
-                        help="Put the name of the directory where the results "
-                             "will be saved",
-                        default='artifacts/drain_result')
-    parser.add_argument("--config_file", type=str,
-                        help="Put the filepath of the config file")
+    add_drain_runner_args(parser)
+
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
     try:
@@ -101,5 +104,5 @@ if __name__ == '__main__':
     except OSError as error:
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
-
-    run_drain(logger, args.input_file, args.output_path, args.config_file)
+    run_drain(logger, args.input_file, args.output_path, args.config_file,
+              args.window_size)

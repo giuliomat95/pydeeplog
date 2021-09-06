@@ -1,7 +1,7 @@
 class Network:
     def __init__(self):
-        self._root_node = RootNode(self, idx=0)
-        self._nodes = {0: self._root_node}
+        self._root_node = RootNode(self)
+        self._nodes = {"root": self._root_node}
         self._last_idx = 0
 
     def get_root_node(self):
@@ -14,22 +14,22 @@ class Network:
         return self._nodes[idx]
 
     def get_last_index(self):
-        return self._last_idx
+        return '-'.join(['node', str(self._last_idx)])
 
     def add_node(self, value, is_start=False, is_end=False, parent_idx=None):
         """
         Given in input the properties of a Node, it adds it to the collection of
         nodes and returns the newer index
         """
-        self._last_idx += 1
+        idx = '-'.join(['node', str(self._last_idx+1)])
         node = Node(self, value, is_start=is_start, is_end=is_end,
-                    parent_idx=parent_idx, idx=self._last_idx)
+                    parent_idx=parent_idx, idx=idx)
         for old_node in self._nodes.values():
             if node == old_node:
-                self._last_idx -= 1
                 return old_node.get_idx()
-        self._nodes[self._last_idx] = node
-        return self._last_idx
+        self._last_idx += 1
+        self._nodes[idx] = node
+        return idx
 
     def replace_node_reference(self, replace_idx, by_idx):
         self._nodes[replace_idx] = self._nodes[by_idx]
@@ -37,7 +37,7 @@ class Network:
 
 class Node:
     def __init__(self, network: Network, value: int = None, is_start=False,
-                 is_end=False, parent_idx: int = None, idx: int = None):
+                 is_end=False, parent_idx: int = None, idx: str = None):
         """
         Attributes:
         :param network: Object of type Network Class
@@ -148,6 +148,6 @@ class Node:
 
 
 class RootNode(Node):
-    def __init__(self, network, idx=None):
+    def __init__(self, network, idx="root"):
         super().__init__(network, value=None, is_start=False, is_end=False,
                          parent_idx=None, idx=idx)
