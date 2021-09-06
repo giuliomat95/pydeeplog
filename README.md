@@ -130,7 +130,10 @@ The default zipped file name is `deeplog_result.zip`.
 
 ### Run Drain
 
-Before running Drain, set the parameters in a config file `.ini`. \
+Before running Drain, set the parameters in a config file `.ini`. Two 
+configuration sample files are available in the repo named `batrasio_config.ini` 
+and `hdfs_config.ini`, respectively for the batrasio and hdfs log data.
+
 Available parameters are:
 
 - `[DRAIN]/sim_th` - similarity threshold (default 0.4)
@@ -182,7 +185,8 @@ To run the `run_log_key_detection_model.py` file, set the following parameters
 in the command line:
 
 + `input_file`: filepath of the log data to be parsed.
-+ `output_path`: filepath of the zipped output file.
++ `output_path`: folder to store the results. The default output path is
+artifacts/artifacts/log_key_model_result'.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
 + `lstm_units`: number of units in each LSTM layer. Default value set to 64.

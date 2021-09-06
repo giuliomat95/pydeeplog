@@ -22,16 +22,16 @@ def run_deeplog(logger, input_file, output_path, config_file, window_size,
                          max_epochs, train_dataset, val_dataset,
                          data_preprocess, early_stop, batch_size,
                          out_tensorboard_path, top_k)
-        run_workflows(logger, td, train_dataset, test_dataset, threshold,
-                      back_steps)
+        # run_workflows(logger, td, train_dataset, test_dataset, threshold,
+        # back_steps)
         # Excluded at the moment from run-all script:
         # run_parameter_detection_model(logger, ...)
 
         zip_directory(td, os.path.join(output_path, ZIPFILE_NAME))
 
 
-def zip_directory(temp_path, zip_file_name):
-    with ZipFile(zip_file_name, 'w') as zip_obj:
+def zip_directory(temp_path, zip_filepath):
+    with ZipFile(zip_filepath, 'w') as zip_obj:
         # Iterate over all the files in the directory
         for folder_name, sub_folders, filenames in os.walk(temp_path):
             for filename in filenames:
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(conflict_handler='resolve')
     add_drain_runner_args(parser)
     add_logkey_model_runner_args(parser)
-    add_workflows_runner_args(parser)
+    # add_workflows_runner_args(parser)
     # Excluded at the moment from run-all script:
     # add_parameters_model_runner_args(parser)
     args = parser.parse_args()
