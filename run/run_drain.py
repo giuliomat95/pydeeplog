@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
-def drain_runner(logger, input_file, output_path, config_file, window_size):
+def run_drain(logger, input_file, output_path, config_file, window_size):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     config = TemplateMinerConfig()
     config.load(config_file)
@@ -104,5 +104,5 @@ if __name__ == '__main__':
     except OSError as error:
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
-    drain_runner(logger, args.input_file, args.output_path, args.config_file,
+    run_drain(logger, args.input_file, args.output_path, args.config_file,
               args.window_size)

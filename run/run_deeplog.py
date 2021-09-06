@@ -2,7 +2,7 @@ import argparse
 import tempfile
 from zipfile import ZipFile
 
-from run.run_drain import drain_runner
+from run.run_drain import run_drain as drain_runner
 from run.run_log_key_detection_model import run_logkey_model
 from run.run_parameter_detection_model import run_parameter_detection_model
 from run.run_workflow import run_workflows
@@ -11,7 +11,7 @@ from . import *
 
 def run_deeplog(logger, input_file, output_path, config_file, window_size,
                 lstm_units, max_epochs, train_ratio, val_ratio, early_stop,
-                batch_size, out_tensorboard_path, top_k, threshold, back_steps):
+                batch_size, out_tensorboard_path, top_k):
     with tempfile.TemporaryDirectory() as td:
         drain_runner(logger, input_file, td, config_file, window_size)
         input_file = os.path.join(td, 'data.json')
@@ -60,4 +60,4 @@ if __name__ == '__main__':
                 args.config_file, args.window_size, args.lstm_units,
                 args.max_epochs, args.train_ratio, args.val_ratio,
                 args.early_stop, args.batch_size, args.out_tensorboard_path,
-                args.top_k, args.threshold, args.back_steps)
+                args.top_k)
