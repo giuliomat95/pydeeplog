@@ -120,7 +120,7 @@ def add_logkey_model_runner_args(parser: ArgumentParser):
                              "tensorboard results if desired", default=None)
     parser.add_argument("--top_k", type=int,
                         help="Put the number of top candidates to estimate the "
-                             "number of anomalies", default=3)
+                             "number of anomalies", default=9)
 
 def add_parameters_model_runner_args(parser: ArgumentParser):
     """

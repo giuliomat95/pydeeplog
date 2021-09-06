@@ -197,7 +197,7 @@ be stopped. Default value set to 7.
 + `out_tensorboard_path`: name of the folder where to save the tensorboard 
 results. If empty any board is stored. Default value set to `None`.
 + `top_k`: number of top candidates to estimate the number of anomalies. 
-Default value set to 10.
+Default value set to 9.
 
 The model is saved in `h5` format with the name `logkey_model.h5` in the 
 zipped file provided.
