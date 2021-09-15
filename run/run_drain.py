@@ -75,8 +75,6 @@ def run_drain(logger, input_file, output_path, config_file, window_size):
                                        session_id=sess_id))
     with open(os.path.join(output_path, 'data.json'), 'w') as f:
         json.dump(result, f)
-    with open(os.path.join(output_path, 'templates.json'), 'w') as g:
-        json.dump(templates, g)
     # Save the Drain tree object in a JSON file
     with open(os.path.join(output_path, 'drain.json'), 'w') as h:
         drain_serialized = drain.serialize_drain()

@@ -10,10 +10,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
 
-def run_logkey_model(logger, output_path, window_size,
-                     lstm_units, max_epochs, train_dataset, val_dataset,
-                     data_preprocess: DataPreprocess, early_stop, batch_size,
-                     out_tensorboard_path, top_k):
+def run_log_key_model(logger, output_path, window_size,
+                      lstm_units, max_epochs, train_dataset, val_dataset,
+                      data_preprocess: DataPreprocess, early_stop, batch_size,
+                      out_tensorboard_path, top_k):
     num_tokens = data_preprocess.get_num_tokens()
     model_manager = ModelManager()
     model = model_manager.build(ModelManager.MODEL_TYPE_LOG_KEYS,
@@ -61,7 +61,7 @@ def run_logkey_model(logger, output_path, window_size,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    add_logkey_model_runner_args(parser)
+    add_log_key_model_runner_args(parser)
 
     args = parser.parse_args()
     logger = logging.getLogger(__name__)
@@ -71,9 +71,9 @@ if __name__ == '__main__':
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
-        logger, args.input_file, args.window_size, args.train_ratio,
+        logger, args.input_path, args.window_size, args.train_ratio,
         args.val_ratio)
-    run_logkey_model(logger, args.output_path, args.window_size,
-                     args.lstm_units, args.max_epochs, train_dataset,
-                     val_dataset, data_preprocess, args.early_stop,
-                     args.batch_size, args.out_tensorboard_path, args.top_k)
+    run_log_key_model(logger, args.output_path, args.window_size,
+                      args.lstm_units, args.max_epochs, train_dataset,
+                      val_dataset, data_preprocess, args.early_stop,
+                      args.batch_size, args.out_tensorboard_path, args.top_k)
