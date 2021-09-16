@@ -121,8 +121,9 @@ python3 -m run.run_deeplog \
 
 The parameters available for this script are:
 - `input_file`: file with the RAW log data.
-- `output_path`: path to store partial files and final ZIP containing all them.
-The default zipped file name is `deeplog_result.zip`.
+- `output_path`: path to store partial files and final ZIPs containing all them.
+The default zipped file name are `deeplog_app_model.zip` and 
+`deeplog_core_model.zip`.
 - The rest of parameters are described in the subsections, 
 [Run Drain](#Run Drain), 
 [Run Log key anomaly detection Model](#Run Log key anomaly detection Model) and
@@ -184,9 +185,9 @@ python3 -m run.run_drain \
 To run the `run_log_key_detection_model.py` file, set the following parameters 
 in the command line:
 
-+ `input_file`: filepath of the log data to be parsed.
++ `input_path`: filepath from root folder where Drain results are saved.
 + `output_path`: folder to store the results. The default output path is
-artifacts/artifacts/log_key_model_result'.
+artifacts/log_key_model_result'.
 + `window_size`: length of chunks, input of the LSTM neural network. Default 
 value set to 10.
 + `lstm_units`: number of units in each LSTM layer. Default value set to 64.
@@ -213,7 +214,7 @@ display the arguments.
 Example of execution:
 ```sh
 python3 -m run.run_log_key_detection_model \
---input_file artifacts/drain_result/data.json \
+--input_path artifacts/drain_result \
 --window_size 12 \
 --max_epochs 100 \
 --train_ratio 0.5 \
@@ -225,8 +226,8 @@ python3 -m run.run_log_key_detection_model \
 
 To run the `run.workflow.py` file, set the following parameter in the command 
 line:
-+ `input_file`: path of the input json dataset to parse. Default path: 
-`artifacts/drain_result/data.json`.
++ `input_path`: filepath from root folder where Drain results are saved. 
+Default path: `artifacts/drain_result`.
 + `output_path`: path of the directory where to save the workflows in a pickle 
  file. Default path: `artifacts/workflows`
 + `min_length`: the minimum length of a sequence to be parsed. Default value set
@@ -255,7 +256,7 @@ parser stage.
  
 To run the `run_parameter_detection_model.py` file, set the following parameters 
 in the command line:
-+ `input_file`: path of the input dataset to parse, with all the parameters of a
++ `input_path`: path of the input dataset to parse, with all the parameters of a
  specific log key message.
 + `output_path`: path of the directory where to save the trained model.
  Default path: `artifacts/log_par_model_result`.

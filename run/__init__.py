@@ -4,19 +4,21 @@ import sys
 import os
 import json
 import numpy as np
+from zipfile import ZipFile
 
 from deeplog_trainer.model.data_preprocess import DataPreprocess
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(message)s')
 
-ZIPFILE_NAME = 'deeplog_result.zip'
+ZIPFILE_APP_MODEL = 'deeplog_app_model.zip'
+ZIPFILE_CORE_MODEL = 'deeplog_core_model.zip'
 
-def create_datasets(logger, input_file, min_length, train_ratio, val_ratio):
+def create_datasets(logger, input_path, min_length, train_ratio, val_ratio):
     root_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     dataset = []
     # Load the data parsed from Drain:
-    with open(os.path.join(root_path, input_file), 'r') as fp:
+    with open(os.path.join(root_path, input_path, 'data.json'), 'r') as fp:
         data = json.load(fp)
         for d in data['data']:
             seq = d['template_seq']
@@ -40,14 +42,27 @@ def create_datasets(logger, input_file, min_length, train_ratio, val_ratio):
                                             len(test_idx)))
     return train_dataset, val_dataset, test_dataset, data_preprocess
 
+def zip_directory(temp_path, zip_filepath, skip_files=None):
+    if skip_files is None:
+        skip_files = []
+    with ZipFile(zip_filepath, 'w') as zip_obj:
+        # Iterate over all the files in the directory
+        for folder_name, sub_folders, filenames in os.walk(temp_path):
+            for filename in filenames:
+                if filename in skip_files:
+                    continue
+                filepath = os.path.join(folder_name, filename)
+                # Add file to zipfile
+                zip_obj.write(filepath, filename)
+
 def add_workflows_runner_args(parser: ArgumentParser):
     """
     Arguments for runner of workflows.
     """
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input json dataset filepath from root "
-                             "folder",
-                        default='artifacts/drain_result/data.json')
+    parser.add_argument("--input_path", type=str,
+                        help="Put the filepath from root folder where Drain"
+                             "results are saved",
+                        default='artifacts/drain_result')
     parser.add_argument("--output_path", type=str,
                         help="Put the path of the output directory",
                         default='artifacts/workflows')
@@ -79,14 +94,15 @@ def add_drain_runner_args(parser: ArgumentParser):
                         help="Put the filepath of the config file")
     parser.add_argument("--window_size", type=int,
                         help="Put the window_size parameter", default=10)
-def add_logkey_model_runner_args(parser: ArgumentParser):
+
+def add_log_key_model_runner_args(parser: ArgumentParser):
     """
     Arguments for runner of log keys (i.e. Drain templates) model.
     """
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input json dataset filepath from root "
-                             "folder",
-                        default='artifacts/drain_result/data.json')
+    parser.add_argument("--input_path", type=str,
+                        help="Put the filepath from root folder where Drain"
+                             "results are saved",
+                        default='artifacts/drain_result')
     parser.add_argument("--output_path", type=str,
                         help="Put the name of the directory where the results "
                              "will be saved",
@@ -126,9 +142,9 @@ def add_parameters_model_runner_args(parser: ArgumentParser):
     """
     Arguments for runner of anomaly detection model in parameter values.
     """
-    parser.add_argument("--input_file", type=str,
-                        help="Put the input json dataset filepath from root "
-                             "folder")
+    parser.add_argument("--input_path", type=str,
+                        help="Put the filepath from root folder where Drain"
+                             "results are saved")
     parser.add_argument("--output_path", type=str,
                         help="Put the path of the output directory",
                         default='artifacts/log_par_model_result')

@@ -44,7 +44,7 @@ if __name__ == '__main__':
         logger.error("Directory {} can not be created".format(args.output_path))
         exit(1)
     train_dataset, val_dataset, test_dataset, data_preprocess = create_datasets(
-        logger, args.input_file, args.window_size, args.train_ratio,
+        logger, args.input_path, args.window_size, args.train_ratio,
         args.val_ratio)
     run_workflows(logger, args.output_path, train_dataset, test_dataset,
                   args.threshold, args.back_steps)
